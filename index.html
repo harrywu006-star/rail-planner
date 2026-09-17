@@ -1,0 +1,1491 @@
+TEST123<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Rail Planner — 把一天排成一条轨道。四种语言，无需注册，所有改动只存在你自己的浏览器里。">
+<title>Rail Planner</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230071e3'/%3E%3Crect x='10' y='22' width='44' height='8' rx='4' fill='white'/%3E%3Crect x='10' y='36' width='28' height='8' rx='4' fill='white' opacity='.75'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface2:#fafafa; --sunken:#f0f0f2;
+  --ink:#1d1d1f; --ink2:#424245; --muted:#6e6e73; --faint:#86868b;
+  --hair:#d2d2d7; --hair2:#e8e8ed;
+  --blue:#0071e3; --blue-h:#0077ed;
+  --nav:rgba(255,255,255,.72);
+  --mix-bg:#ffffff; --tint-amt:13%;
+  --mix-ed:#ffffff; --edge-amt:100%;
+  --mix-fg:#1d1d1f; --fg-amt:90%;
+  --sh-s:0 1px 2px rgba(0,0,0,.04), 0 4px 12px -6px rgba(0,0,0,.10);
+  --sh-m:0 1px 3px rgba(0,0,0,.05), 0 12px 32px -14px rgba(0,0,0,.18);
+  --r-l:18px; --r-m:12px;
+  --cjk:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC";
+}
+:root:lang(zh-Hant){--cjk:"PingFang TC","Hiragino Sans CNS","Microsoft JhengHei","Noto Sans TC"}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000; --surface:#1c1c1e; --surface2:#161618; --sunken:#0c0c0d;
+    --ink:#f5f5f7; --ink2:#d6d6da; --muted:#98989d; --faint:#7d7d82;
+    --hair:#38383c; --hair2:#2a2a2d;
+    --blue:#2997ff; --blue-h:#48a5ff;
+    --nav:rgba(22,22,24,.72);
+    --mix-bg:#000000; --tint-amt:26%;
+    --mix-ed:#ffffff; --edge-amt:80%;
+    --mix-fg:#ffffff; --fg-amt:62%;
+    --sh-s:0 1px 2px rgba(0,0,0,.5); --sh-m:0 12px 32px -14px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#1c1c1e; --surface2:#161618; --sunken:#0c0c0d;
+  --ink:#f5f5f7; --ink2:#d6d6da; --muted:#98989d; --faint:#7d7d82;
+  --hair:#38383c; --hair2:#2a2a2d;
+  --blue:#2997ff; --blue-h:#48a5ff;
+  --nav:rgba(22,22,24,.72);
+  --mix-bg:#000000; --tint-amt:26%;
+  --mix-ed:#ffffff; --edge-amt:80%;
+  --mix-fg:#ffffff; --fg-amt:62%;
+  --sh-s:0 1px 2px rgba(0,0,0,.5); --sh-m:0 12px 32px -14px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",var(--cjk),sans-serif;
+  font-size:15px; line-height:1.5; letter-spacing:-.01em;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+.num{font-variant-numeric:tabular-nums}
+
+/* nav */
+.nav{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:60;
+  background:var(--nav); backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:1px solid var(--hair2);
+}
+.nav-in{
+  max-width:1680px; margin:0 auto; padding:7px 22px; min-height:52px;
+  display:flex; align-items:center; gap:10px 12px; flex-wrap:wrap;
+}
+.brand{font-size:15px; font-weight:600; letter-spacing:-.02em; margin-right:auto; display:flex; align-items:center; gap:9px; white-space:nowrap}
+.brand .dot{width:8px; height:8px; border-radius:50%; background:var(--blue); flex:none}
+.seg{display:flex; background:var(--sunken); border-radius:980px; padding:2px; gap:2px}
+.seg button{
+  border:0; background:transparent; color:var(--muted); cursor:pointer;
+  font:inherit; font-size:13px; font-weight:500; padding:5px 15px; border-radius:980px;
+  transition:background .18s,color .18s; white-space:nowrap;
+}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:var(--sh-s)}
+.btn{
+  border:0; cursor:pointer; font:inherit; font-size:13px; font-weight:500;
+  padding:6px 15px; border-radius:980px; background:var(--sunken); color:var(--ink);
+  transition:background .18s,transform .1s; white-space:nowrap;
+}
+.btn:hover{background:var(--hair2)}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--blue); color:#fff}
+.btn.pri:hover{background:var(--blue-h)}
+.btn.warn{background:#ff3b30; color:#fff}
+.btn.ghost{background:transparent; color:var(--blue)}
+.btn.ghost:hover{background:var(--sunken)}
+select.lang{
+  font:inherit; font-size:13px; font-weight:500; color:var(--ink);
+  background:var(--sunken); border:0; border-radius:980px; padding:6px 11px;
+  cursor:pointer; appearance:none; -webkit-appearance:none;
+}
+select.lang:hover{background:var(--hair2)}
+.status{font-size:12px; color:var(--faint); min-width:82px; text-align:right; letter-spacing:0}
+
+/* shell */
+.page{max-width:1680px; margin:0 auto; padding-inline:22px; padding-block:0 96px}
+.hero{padding:74px 0 46px; text-align:center}
+.hero h1{margin:0; font-size:clamp(34px,5.2vw,70px); font-weight:600; letter-spacing:-.028em; line-height:1.05; text-wrap:balance}
+.hero .lede{margin:17px auto 0; max-width:660px; font-size:clamp(16px,1.5vw,20px); color:var(--muted); line-height:1.45; letter-spacing:-.012em}
+.stats{display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:38px}
+.stat{background:var(--surface); border-radius:var(--r-m); padding:14px 22px; box-shadow:var(--sh-s); min-width:118px; position:relative; text-align:left}
+.stat .sv{font-size:26px; font-weight:600; letter-spacing:-.022em; line-height:1.15}
+.stat .sl{font-size:12px; color:var(--muted); margin-top:3px; letter-spacing:0}
+
+section{margin-top:64px}
+.sec-head{display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:20px}
+.sec-head h2{margin:0; font-size:clamp(24px,2.6vw,34px); font-weight:600; letter-spacing:-.024em; line-height:1.1}
+.sec-head p{margin:0; color:var(--muted); font-size:14px; max-width:58ch; flex:1 1 280px; min-height:1.4em}
+
+.tint{
+  background:color-mix(in srgb, var(--c) var(--tint-amt), var(--mix-bg));
+  --fg:color-mix(in srgb, var(--c) var(--fg-amt), var(--mix-fg));
+  --edge:color-mix(in srgb, var(--c) var(--edge-amt), var(--mix-ed));
+}
+
+.board{background:var(--surface); border-radius:var(--r-l); padding:20px; box-shadow:var(--sh-m)}
+.hscroll{overflow-x:auto; overflow-y:visible; margin:0 -4px; padding:4px}
+.track{display:grid; gap:8px; align-items:stretch}
+.blk{
+  position:relative; border-radius:var(--r-m); padding:12px 11px 13px;
+  display:flex; flex-direction:column; gap:3px; min-height:132px;
+  border-top:3px solid var(--edge,var(--hair)); transition:box-shadow .18s;
+}
+.blk:hover{box-shadow:var(--sh-s)}
+.blk .bt{font-size:12px; font-weight:600; color:var(--fg); opacity:.85; letter-spacing:0}
+.blk .bn{font-size:15px; font-weight:600; letter-spacing:-.015em; line-height:1.22; margin-top:auto; color:var(--ink)}
+.blk .bnote{font-size:11.5px; color:var(--muted); line-height:1.3; letter-spacing:0}
+.blk .bd{font-size:12px; color:var(--fg); font-weight:500; letter-spacing:0}
+.blk .bd .u{opacity:.6}
+
+.wgrid{display:grid; gap:6px; min-width:1000px}
+.wcell{padding:10px 11px; border-radius:10px; font-size:13px; line-height:1.34; background:var(--surface2)}
+.whead{background:var(--ink); color:var(--bg); font-weight:600; font-size:14px; letter-spacing:-.01em; text-align:center; padding:11px 8px}
+.wrowhead{font-weight:600; font-size:13.5px; letter-spacing:-.01em; color:var(--ink); word-break:keep-all; overflow-wrap:normal}
+.wrowhead .sub{display:block; font-weight:400; font-size:11px; color:var(--muted); margin-top:2px; letter-spacing:0; word-break:keep-all; overflow-wrap:normal}
+.wrow{display:grid; gap:6px; grid-template-columns:var(--wcols)}
+.wcorner{background:transparent}
+
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(272px,1fr)); gap:18px}
+.card{border-radius:var(--r-l); padding:22px 22px 24px; box-shadow:var(--sh-s); border-top:3px solid var(--edge,var(--hair)); position:relative}
+.card .eyebrow{font-size:11.5px; font-weight:600; color:var(--fg); letter-spacing:.04em; margin-bottom:7px}
+.card h3{margin:0 0 12px; font-size:19px; font-weight:600; letter-spacing:-.018em; line-height:1.24}
+.card ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px}
+.card li{font-size:13.5px; line-height:1.48; color:var(--ink2); position:relative; padding-left:15px; letter-spacing:-.005em}
+.card li::before{content:""; position:absolute; left:2px; top:.62em; width:5px; height:5px; border-radius:50%; background:var(--fg); opacity:.75}
+
+.notes{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px}
+.note{border-radius:var(--r-l); padding:20px 22px 22px; box-shadow:var(--sh-s); border-top:3px solid var(--edge,var(--hair)); position:relative}
+.note .nlabel{font-size:13px; font-weight:600; color:var(--fg); letter-spacing:.01em; margin-bottom:8px}
+.note .nbody{font-size:14px; line-height:1.62; color:var(--ink2); letter-spacing:-.005em; white-space:pre-wrap; min-height:3.2em}
+
+.strip{display:grid; gap:6px; min-width:1000px}
+.scell{background:var(--surface2); border-radius:10px; padding:13px 13px 15px; display:flex; flex-direction:column; gap:9px; min-height:104px; position:relative}
+.scell .slb{font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:0}
+.scell .sline{margin-top:auto; border-bottom:1px dashed var(--hair); height:17px}
+.scell .sbox{margin-top:auto; font-size:12.5px; color:var(--ink2); line-height:1.5}
+.scell.hi{background:color-mix(in srgb, var(--blue) 12%, var(--surface))}
+.scell.hi .slb{color:var(--blue)}
+
+/* editing */
+[contenteditable]{outline:none; border-radius:5px; transition:box-shadow .15s,background .15s}
+body.edit [contenteditable]{cursor:text}
+body.edit [contenteditable]:hover{box-shadow:inset 0 0 0 1px var(--hair)}
+[contenteditable]:focus{box-shadow:inset 0 0 0 2px var(--blue)!important; background:color-mix(in srgb,var(--blue) 7%,transparent)}
+body.edit [contenteditable]:empty::before{content:attr(data-ph); color:var(--faint); opacity:.75}
+
+.tools{position:absolute; top:7px; right:7px; display:none; gap:3px; z-index:5}
+body.edit .blk .tools, body.edit .card .tools, body.edit .scell .tools,
+body.edit .wrowhead .tools, body.edit .note .tools, body.edit .stat .tools{display:flex}
+body.edit .blk{padding-top:36px}
+body.edit .scell{padding-top:34px}
+body.edit .card{padding-top:34px}
+body.edit .note{padding-top:34px}
+body.edit .wrowhead{padding-top:32px}
+body.edit .stat{padding-top:34px; min-width:132px}
+body.edit .card li{padding-right:22px}
+.ic{
+  width:19px; height:19px; border-radius:50%; border:0; cursor:pointer; padding:0;
+  display:grid; place-items:center; background:var(--surface); color:var(--muted);
+  box-shadow:var(--sh-s); font-size:11px; line-height:1; font-family:inherit;
+}
+.ic:hover{color:var(--ink)}
+.ic.del:hover{background:#ff3b30; color:#fff}
+.ic.add{font-size:13px; font-weight:600}
+.ic.add:hover{background:var(--blue); color:#fff}
+.ic.grip{cursor:grab}
+.sw{position:relative; width:19px; height:19px}
+.sw .swb{position:absolute; inset:0; border:0; padding:0; cursor:pointer; border-radius:50%; background:var(--c); box-shadow:var(--sh-s),inset 0 0 0 1px rgba(0,0,0,.14)}
+.sw .swb:hover{transform:scale(1.12)}
+.sw input{position:absolute; left:50%; top:100%; width:1px; height:1px; opacity:0; border:0; padding:0; pointer-events:none}
+
+.adder{
+  border:1px dashed var(--hair); background:transparent; color:var(--muted);
+  border-radius:var(--r-m); cursor:pointer; font:inherit; font-size:13px;
+  display:none; place-items:center; min-height:132px; min-width:76px;
+}
+.adder:hover{border-color:var(--blue); color:var(--blue)}
+body.edit .adder{display:grid}
+.addrow{
+  display:none; margin-top:10px; border:1px dashed var(--hair); background:transparent;
+  color:var(--muted); border-radius:10px; cursor:pointer; font:inherit; font-size:13px; padding:10px; width:100%;
+}
+.addrow:hover{border-color:var(--blue); color:var(--blue)}
+body.edit .addrow{display:block}
+.boardbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:12px}
+.addend{display:none}
+body.edit .addend{display:inline-block}
+.hint{margin:0; font-size:12.5px; color:var(--faint); display:none; letter-spacing:0}
+body.edit .hint{display:block}
+.drop-mark{outline:2px solid var(--blue); outline-offset:2px; border-radius:var(--r-m)}
+.dragging{opacity:.35}
+.caption{font-size:13px; color:var(--muted); margin-top:14px; line-height:1.5; max-width:96ch}
+
+/* palette popover */
+.pal{position:fixed; z-index:95; background:var(--surface); border-radius:16px; box-shadow:var(--sh-m),0 0 0 1px var(--hair2); padding:12px; width:238px}
+.pal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:7px}
+.pal-grid button{width:24px; height:24px; border-radius:50%; border:0; padding:0; cursor:pointer; box-shadow:inset 0 0 0 1px rgba(0,0,0,.14); position:relative}
+.pal-grid button:hover{transform:scale(1.14)}
+.pal-grid button[aria-current="true"]::after{content:"✓"; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-size:13px; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.5)}
+.pal-foot{display:flex; align-items:center; gap:8px; margin-top:11px; padding-top:10px; border-top:1px solid var(--hair2)}
+.pal-foot button{border:0; background:transparent; color:var(--blue); cursor:pointer; font:inherit; font-size:13px; font-weight:500; padding:3px 6px; border-radius:7px}
+.pal-foot button:hover{background:var(--sunken)}
+.pal-foot .now{margin-left:auto; font-size:11.5px; color:var(--faint); letter-spacing:0}
+
+.ic.back{
+  width:30px; height:30px; font-size:22px; font-weight:500; color:var(--blue); background:var(--sunken);
+  box-shadow:none; padding-bottom:3px;
+}
+.ic.back:hover{background:var(--hair2); color:var(--blue)}
+
+/* plan switcher */
+.btn.plan{display:inline-flex; align-items:center; gap:6px; max-width:240px}
+.btn.plan #planName{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.btn.plan .chev{color:var(--muted); font-size:12px; line-height:1; transform:translateY(-2px)}
+.pop{position:fixed; z-index:95; background:var(--surface); border-radius:16px; box-shadow:var(--sh-m),0 0 0 1px var(--hair2); padding:10px; width:min(340px,calc(100vw - 20px))}
+.pop-title{font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:.04em; padding:4px 10px 8px}
+.pop-list{display:flex; flex-direction:column; gap:2px; max-height:46vh; overflow:auto}
+.pop-list button{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:left; border:0; cursor:pointer;
+  background:transparent; color:var(--ink); font:inherit; font-size:13.5px; padding:9px 10px; border-radius:10px;
+}
+.pop-list button:hover{background:var(--sunken)}
+.pop-list button[aria-current="true"]{background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.pop-list .pn{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500}
+.pop-list .pd{font-size:11.5px; color:var(--faint); letter-spacing:0; white-space:nowrap}
+.pop-list .pk{width:16px; color:var(--blue); font-weight:700; text-align:center}
+.pop-foot{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--hair2)}
+.pop-foot .btn{padding:6px 12px}
+.btn.danger{color:#ff3b30}
+.btn.danger:hover{background:rgba(255,59,48,.1)}
+input.txt{
+  width:100%; border:1px solid var(--hair); border-radius:12px; padding:11px 13px; font:inherit; font-size:15px;
+  background:var(--surface2); color:var(--ink); margin-bottom:16px; outline:none;
+}
+input.txt:focus{border-color:var(--blue); box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 18%,transparent)}
+.stback{position:absolute; left:22px; top:22px}
+.start-in{position:relative}
+@media (max-width:640px){ .stback{position:static; margin-bottom:14px} }
+
+/* sheets */
+.sheet{position:fixed; inset:0; z-index:120; display:none; place-items:center; background:rgba(0,0,0,.36); backdrop-filter:blur(4px); padding:20px}
+.sheet.on{display:grid}
+.sheet-in{background:var(--surface); border-radius:20px; box-shadow:var(--sh-m); padding:26px 26px 22px; max-width:460px; width:100%}
+.sheet-in h3{margin:0 0 8px; font-size:20px; font-weight:600; letter-spacing:-.02em}
+.sheet-in p{margin:0 0 18px; color:var(--muted); font-size:14px; line-height:1.5}
+.sheet-row{display:flex; gap:9px; justify-content:flex-end; flex-wrap:wrap}
+textarea.bk{
+  width:100%; height:150px; border:1px solid var(--hair); border-radius:12px; padding:11px;
+  font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--surface2);
+  color:var(--ink); resize:vertical; margin-bottom:14px;
+}
+
+/* first-run chooser */
+.start{position:fixed; inset:0; z-index:100; background:var(--bg); overflow:auto; display:none}
+.start.on{display:block}
+.start-in{max-width:1180px; margin:0 auto; padding:clamp(40px,9vh,96px) 22px 60px; text-align:center}
+.start-in .badge{display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--muted)}
+.start-in .badge .dot{width:8px; height:8px; border-radius:50%; background:var(--blue)}
+.start-in h1{margin:16px 0 0; font-size:clamp(30px,4.6vw,56px); font-weight:600; letter-spacing:-.028em; line-height:1.07; text-wrap:balance}
+.start-in .sub{margin:15px auto 0; max-width:620px; color:var(--muted); font-size:clamp(15px,1.4vw,18px); line-height:1.5}
+.picks{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px; margin-top:44px; text-align:left}
+.pick{
+  background:var(--surface); border:0; border-radius:var(--r-l); padding:24px 22px 22px;
+  box-shadow:var(--sh-s); cursor:pointer; font:inherit; color:var(--ink); text-align:left;
+  display:flex; flex-direction:column; gap:9px; transition:box-shadow .2s,transform .2s;
+}
+.pick:hover{box-shadow:var(--sh-m); transform:translateY(-2px)}
+.pick .pi{width:30px; height:3px; border-radius:2px; background:var(--pc,var(--hair)); margin-bottom:5px}
+.pick b{font-size:17px; font-weight:600; letter-spacing:-.018em}
+.pick span{font-size:13.5px; color:var(--muted); line-height:1.5}
+.pick .go{margin-top:auto; padding-top:10px; font-size:13px; font-weight:500; color:var(--blue)}
+.start-foot{margin-top:34px; display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; color:var(--faint); font-size:12.5px}
+
+@media (max-width:640px){
+  .hero{padding:44px 0 32px}
+  .page{padding-inline:16px}
+  .nav-in{padding:7px 16px}
+  .board{padding:14px; border-radius:14px}
+}
+@media print{
+  @page{margin:10mm}
+  body{background:#fff; font-size:11px}
+  .nav,.tools,.adder,.addrow,.hint,.sheet,.status,.pal,.boardbar,.start{display:none!important}
+  .page{max-width:none; padding:0}
+  .hero{padding:0 0 18px; text-align:left}
+  .board{box-shadow:none; padding:0}
+  .card,.stat,.note{box-shadow:none; border:1px solid var(--hair)}
+  section{margin-top:20px; break-inside:avoid}
+  .hscroll{overflow:visible}
+  .wgrid,.strip{min-width:0}
+  .track{display:flex!important; gap:4px}
+  .blk{flex:var(--dur,60) 1 0; min-width:0; min-height:96px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="nav-in">
+    <button class="ic back" id="bBack" hidden>‹</button>
+    <div class="brand"><span class="dot"></span><span id="navBrand"></span></div>
+    <div class="seg" role="group">
+      <button id="mEdit" aria-pressed="true"></button>
+      <button id="mView" aria-pressed="false"></button>
+    </div>
+    <button class="btn" id="bPrint"></button>
+    <button class="btn" id="bBackup"></button>
+    <button class="btn plan" id="bPlans"><span id="planName"></span><span class="chev">⌄</span></button>
+    <select class="lang" id="langSel" aria-label="Language">
+      <option value="zh-Hans">简体中文</option>
+      <option value="zh-Hant">繁體中文</option>
+      <option value="en">English</option>
+      <option value="de">Deutsch</option>
+    </select>
+    <span class="status" id="status"></span>
+  </div>
+</div>
+
+<div class="page" id="app"></div>
+
+<div class="pal" id="pal" hidden>
+  <div class="pal-grid" id="palGrid"></div>
+  <div class="pal-foot">
+    <button id="palCustom"></button>
+    <span class="now" id="palNow"></span>
+  </div>
+</div>
+
+<div class="sheet" id="shBackup">
+  <div class="sheet-in">
+    <h3 id="bkT"></h3>
+    <p id="bkD"></p>
+    <textarea class="bk" id="bkArea" spellcheck="false"></textarea>
+    <div class="sheet-row">
+      <button class="btn" id="bkClose"></button>
+      <button class="btn" id="bkImport"></button>
+      <button class="btn pri" id="bkCopy"></button>
+    </div>
+  </div>
+</div>
+
+<div class="pop" id="plansPop" hidden>
+  <div class="pop-title" id="plansT"></div>
+  <div class="pop-list" id="plansList"></div>
+  <div class="pop-foot">
+    <button class="btn pri" id="plNew"></button>
+    <button class="btn" id="plDup"></button>
+    <button class="btn" id="plRen"></button>
+    <button class="btn ghost danger" id="plDel"></button>
+  </div>
+</div>
+
+<div class="sheet" id="shRen">
+  <div class="sheet-in">
+    <h3 id="renT"></h3>
+    <input class="txt" id="renInput" type="text" maxlength="60">
+    <div class="sheet-row">
+      <button class="btn" id="renNo"></button>
+      <button class="btn pri" id="renYes"></button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="shAsk">
+  <div class="sheet-in">
+    <h3 id="askT"></h3>
+    <p id="askD"></p>
+    <div class="sheet-row">
+      <button class="btn" id="askNo"></button>
+      <button class="btn warn" id="askYes"></button>
+    </div>
+  </div>
+</div>
+
+<div class="start" id="start">
+  <div class="start-in">
+    <button class="btn ghost stback" id="stBack" hidden></button>
+    <div class="badge"><span class="dot"></span><span id="stBrand"></span></div>
+    <h1 id="stTitle"></h1>
+    <p class="sub" id="stSub"></p>
+    <div class="picks" id="picks"></div>
+    <div class="start-foot">
+      <select class="lang" id="langSel2" aria-label="Language">
+        <option value="zh-Hans">简体中文</option>
+        <option value="zh-Hant">繁體中文</option>
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+      </select>
+      <span id="stFoot"></span>
+    </div>
+  </div>
+</div>
+<script>
+/* ═══════════ 0. 语言包 ═══════════ */
+const LANGS = ['zh-Hans','zh-Hant','en','de'];
+
+const UI = {
+'zh-Hans':{
+ app:'轨道编辑器', edit:'编辑', preview:'预览', print:'打印', backup:'备份', switchTpl:'换模板',
+ saving:'保存中…', saved:'已保存 · 本机',
+ stTitle:'把一天排成一条轨道', stSub:'桩钉死，弹性段可涨。选一个开头，剩下的全都可以自己改 —— 文字、颜色、顺序。不用注册，改动只存在你自己的浏览器里。',
+ stFoot:'切换语言只改界面文字，不会翻译你写的内容。',
+ pBlankT:'空白模板', pBlankD:'时间骨架已经排好，文字全空。最省事的起点 —— 照着格子往里填。',
+ pDemoT:'示例模板', pDemoD:'一份填好的真实计划（数学为重点，加上拍摄剪辑和 Blender）。想看看能做成什么样就选这个。',
+ pMinT:'从零开始', pMinD:'只给一段、一条轨道、一张卡。结构全由你自己搭。',
+ use:'选这个 →',
+ swT:'换一个模板？', swD:'会丢掉你现在所有的改动 —— 文字、颜色、拖过的顺序都会没了。',
+ cancel:'取消', ok:'继续',
+ bkT:'备份 / 恢复', bkD:'你的内容只存在这台设备的浏览器里。复制下面这段文字存起来，换设备或清了浏览器数据时粘回来就能恢复。',
+ bkCopy:'复制', bkCopied:'已复制', bkImport:'从上面的文字恢复', bkClose:'关闭', bkBad:'这段文字读不出来，请检查是否复制完整。',
+ addDay:'＋ 加一段', addDayEnd:'＋ 在末尾加一段', addWeek:'＋ 加一条轨道', addCard:'＋ 加一张卡', addStrip:'＋ 加一格', addNote:'＋ 加一块备注', addItem:'＋ 加一条',
+ tipDrag:'拖动排序', tipColor:'选颜色', tipDel:'删除',
+ insDay:'在右边插入一段', insWeek:'在下面插入一条轨道', insCard:'在后面插入一张卡', insStrip:'在右边插入一格', insNote:'在后面插入一块', insItem:'插入一条',
+ hint:'每个模块右上角：⠿ 拖动排序 · 色点选颜色 · ＋ 就地插入 · ✕ 删除',
+ palCustom:'自定义颜色…',
+ phTime:'时间', phNote:'标注', phName:'做什么', phRowName:'名称', phRowSub:'备注', phCell:'—',
+ phEyebrow:'编号 · 分类', phCardTitle:'标题', phItem:'写一条规则', phLabel:'标签',
+ phSecTitle:'章节标题', phSecDesc:'这一段的说明（可留空）', phNoteLabel:'小标题', phNoteBody:'在这里写。回车换行，想写多长都行。',
+ phTitle:'给你的计划起个名字', phLede:'一句话说清这份计划是干什么的（可留空）',
+ plans:'我的计划', newPlan:'＋ 新建计划…', dupPlan:'复制这份', renPlan:'重命名', delPlan:'删除这份',
+ delT:'删除这份计划？', delD:'只删这一份，其他计划不受影响。删了就找不回来了。', del:'删除',
+ renT:'给这份计划改个名字', renPh:'计划名称', save:'保存',
+ back:'← 返回当前计划', stSubMore:'再建一份新的。你现在那份原样保留，随时可以在顶部「我的计划」里切回去。',
+ untitled:'未命名计划', copySuffix:'副本', importName:'导入的计划',
+ prev:'上一步：重新选择起点', stSubRe:'重新选一个起点。这份计划的内容会被替换，其他计划不受影响。',
+ reT:'替换这份计划的内容？', reD:'你在这份里已经改过东西，重选模板会把它们清掉。想两份都留着的话，用顶部「我的计划 → 新建计划」。', replace:'替换',
+ phAny:'输入…', phStatV:'0', phStatL:'说明',
+ newDay:'新的一段', newWeek:'新轨道', newCardEye:'新分类', newCard:'新规则', newStrip:'新格子', newNote:'新备注', newItem:'写一条',
+ days:['周一','周二','周三','周四','周五','周六','周日'],
+ colors:['蓝','浅蓝','深蓝','青','绿','橄榄绿','草绿','黄','橙','红','粉','紫','灰','石墨']
+},
+'zh-Hant':{
+ app:'軌道編輯器', edit:'編輯', preview:'預覽', print:'列印', backup:'備份', switchTpl:'換範本',
+ saving:'儲存中…', saved:'已儲存 · 本機',
+ stTitle:'把一天排成一條軌道', stSub:'樁釘死，彈性段可漲。選一個開頭，其餘全部可以自己改 —— 文字、顏色、順序。不用註冊，改動只存在你自己的瀏覽器裡。',
+ stFoot:'切換語言只改介面文字，不會翻譯你寫的內容。',
+ pBlankT:'空白範本', pBlankD:'時間骨架已排好，文字全空。最省事的起點 —— 照著格子往裡填。',
+ pDemoT:'範例範本', pDemoD:'一份填好的真實計畫（數學為重點，加上拍攝剪輯和 Blender）。想看看能做成什麼樣就選這個。',
+ pMinT:'從零開始', pMinD:'只給一段、一條軌道、一張卡。結構全由你自己搭。',
+ use:'選這個 →',
+ swT:'換一個範本？', swD:'會丟掉你現在所有的修改 —— 文字、顏色、拖過的順序都會沒了。',
+ cancel:'取消', ok:'繼續',
+ bkT:'備份 / 還原', bkD:'你的內容只存在這台裝置的瀏覽器裡。複製下面這段文字存起來，換裝置或清了瀏覽器資料時貼回來就能還原。',
+ bkCopy:'複製', bkCopied:'已複製', bkImport:'從上面的文字還原', bkClose:'關閉', bkBad:'這段文字讀不出來，請檢查是否複製完整。',
+ addDay:'＋ 加一段', addDayEnd:'＋ 在末尾加一段', addWeek:'＋ 加一條軌道', addCard:'＋ 加一張卡', addStrip:'＋ 加一格', addNote:'＋ 加一塊備註', addItem:'＋ 加一條',
+ tipDrag:'拖動排序', tipColor:'選顏色', tipDel:'刪除',
+ insDay:'在右邊插入一段', insWeek:'在下面插入一條軌道', insCard:'在後面插入一張卡', insStrip:'在右邊插入一格', insNote:'在後面插入一塊', insItem:'插入一條',
+ hint:'每個模塊右上角：⠿ 拖動排序 · 色點選顏色 · ＋ 就地插入 · ✕ 刪除',
+ palCustom:'自訂顏色…',
+ phTime:'時間', phNote:'標註', phName:'做什麼', phRowName:'名稱', phRowSub:'備註', phCell:'—',
+ phEyebrow:'編號 · 分類', phCardTitle:'標題', phItem:'寫一條規則', phLabel:'標籤',
+ phSecTitle:'章節標題', phSecDesc:'這一段的說明（可留空）', phNoteLabel:'小標題', phNoteBody:'在這裡寫。Enter 換行，想寫多長都行。',
+ phTitle:'給你的計畫起個名字', phLede:'一句話說清這份計畫是做什麼的（可留空）',
+ plans:'我的計畫', newPlan:'＋ 新建計畫…', dupPlan:'複製這份', renPlan:'重新命名', delPlan:'刪除這份',
+ delT:'刪除這份計畫？', delD:'只刪這一份，其他計畫不受影響。刪了就找不回來了。', del:'刪除',
+ renT:'給這份計畫改個名字', renPh:'計畫名稱', save:'儲存',
+ back:'← 返回目前計畫', stSubMore:'再建一份新的。你目前那份原樣保留，隨時可以在頂部「我的計畫」裡切回去。',
+ untitled:'未命名計畫', copySuffix:'副本', importName:'匯入的計畫',
+ prev:'上一步：重新選擇起點', stSubRe:'重新選一個起點。這份計畫的內容會被替換，其他計畫不受影響。',
+ reT:'替換這份計畫的內容？', reD:'你在這份裡已經改過東西，重選範本會把它們清掉。想兩份都留著的話，用頂部「我的計畫 → 新建計畫」。', replace:'替換',
+ phAny:'輸入…', phStatV:'0', phStatL:'說明',
+ newDay:'新的一段', newWeek:'新軌道', newCardEye:'新分類', newCard:'新規則', newStrip:'新格子', newNote:'新備註', newItem:'寫一條',
+ days:['週一','週二','週三','週四','週五','週六','週日'],
+ colors:['藍','淺藍','深藍','青','綠','橄欖綠','草綠','黃','橙','紅','粉','紫','灰','石墨']
+},
+'en':{
+ app:'Rail Planner', edit:'Edit', preview:'Preview', print:'Print', backup:'Backup', switchTpl:'Change template',
+ saving:'Saving…', saved:'Saved · on this device',
+ stTitle:'Lay your day out as one rail', stSub:'Fixed posts hold; elastic stretches. Pick a starting point — everything after that is yours to change: text, colours, order. No sign-up, and your edits stay in your own browser.',
+ stFoot:'Switching language changes the interface only. It never translates what you wrote.',
+ pBlankT:'Blank template', pBlankD:'The time skeleton is laid out, all the words are empty. The easiest start — just fill in the slots.',
+ pDemoT:'Worked example', pDemoD:'A real plan, filled in: maths first, plus filming, editing and Blender. Pick this to see what the thing can become.',
+ pMinT:'Start from nothing', pMinD:'One block, one rail, one card. You build the whole structure yourself.',
+ use:'Use this →',
+ swT:'Change template?', swD:'This discards everything you have now — text, colours and the order you dragged things into.',
+ cancel:'Cancel', ok:'Continue',
+ bkT:'Backup / restore', bkD:'Your content lives only in this browser on this device. Copy the text below and keep it somewhere; paste it back to restore after switching device or clearing browser data.',
+ bkCopy:'Copy', bkCopied:'Copied', bkImport:'Restore from the text above', bkClose:'Close', bkBad:'That text could not be read — check you pasted all of it.',
+ addDay:'＋ Add a block', addDayEnd:'＋ Add a block at the end', addWeek:'＋ Add a rail', addCard:'＋ Add a card', addStrip:'＋ Add a slot', addNote:'＋ Add a note', addItem:'＋ Add a line',
+ tipDrag:'Drag to reorder', tipColor:'Pick a colour', tipDel:'Delete',
+ insDay:'Insert a block to the right', insWeek:'Insert a rail below', insCard:'Insert a card after', insStrip:'Insert a slot to the right', insNote:'Insert a note after', insItem:'Insert a line',
+ hint:'Top-right of every module: ⠿ drag to reorder · dot for colour · ＋ insert in place · ✕ delete',
+ palCustom:'Custom colour…',
+ phTime:'Time', phNote:'Label', phName:'What you do', phRowName:'Name', phRowSub:'Note', phCell:'—',
+ phEyebrow:'No. · category', phCardTitle:'Title', phItem:'Write a rule', phLabel:'Label',
+ phSecTitle:'Section title', phSecDesc:'A note about this section (optional)', phNoteLabel:'Heading', phNoteBody:'Write here. Return for a new line — as long as you like.',
+ phTitle:'Name your plan', phLede:'One line on what this plan is for (optional)',
+ plans:'My plans', newPlan:'＋ New plan…', dupPlan:'Duplicate', renPlan:'Rename', delPlan:'Delete this plan',
+ delT:'Delete this plan?', delD:'Only this one goes; your other plans are untouched. This cannot be undone.', del:'Delete',
+ renT:'Rename this plan', renPh:'Plan name', save:'Save',
+ back:'← Back to current plan', stSubMore:'Start another plan. The one you have stays exactly as it is — switch back any time from “My plans” at the top.',
+ untitled:'Untitled plan', copySuffix:'copy', importName:'Imported plan',
+ prev:'Back: pick a different start', stSubRe:'Pick a different starting point. This plan\u2019s content will be replaced; your other plans are untouched.',
+ reT:'Replace this plan\u2019s content?', reD:'You have already edited this plan; choosing a template again clears those edits. To keep both, use “My plans → New plan” at the top instead.', replace:'Replace',
+ phAny:'Type…', phStatV:'0', phStatL:'Caption',
+ newDay:'New block', newWeek:'New rail', newCardEye:'New category', newCard:'New rule', newStrip:'New slot', newNote:'New note', newItem:'Write a line',
+ days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+ colors:['Blue','Light blue','Navy','Teal','Green','Olive','Grass','Yellow','Orange','Red','Pink','Purple','Grey','Graphite']
+},
+'de':{
+ app:'Tagesfahrplan', edit:'Bearbeiten', preview:'Vorschau', print:'Drucken', backup:'Sicherung', switchTpl:'Vorlage wechseln',
+ saving:'Speichern…', saved:'Gespeichert · auf diesem Gerät',
+ stTitle:'Der Tag als eine Strecke', stSub:'Die Pfosten stehen fest, die elastischen Abschnitte dürfen wachsen. Wähle einen Anfang — alles danach gehört dir: Text, Farben, Reihenfolge. Keine Anmeldung, und deine Änderungen bleiben in deinem Browser.',
+ stFoot:'Die Sprachumstellung ändert nur die Oberfläche. Deine eigenen Texte werden nicht übersetzt.',
+ pBlankT:'Leere Vorlage', pBlankD:'Das Zeitgerüst steht, alle Texte sind leer. Der einfachste Anfang — einfach die Felder ausfüllen.',
+ pDemoT:'Ausgefülltes Beispiel', pDemoD:'Ein echter Plan, fertig ausgefüllt: Mathe zuerst, dazu Drehen, Schnitt und Blender. Nimm das, um zu sehen, was daraus werden kann.',
+ pMinT:'Bei Null anfangen', pMinD:'Ein Abschnitt, eine Zeile, eine Karte. Die Struktur baust du komplett selbst.',
+ use:'Damit starten →',
+ swT:'Vorlage wechseln?', swD:'Damit ist alles weg, was du bisher hast — Texte, Farben und die Reihenfolge, die du zusammengezogen hast.',
+ cancel:'Abbrechen', ok:'Weiter',
+ bkT:'Sichern / wiederherstellen', bkD:'Deine Inhalte liegen nur in diesem Browser auf diesem Gerät. Kopiere den Text unten und bewahre ihn auf; nach einem Gerätewechsel oder gelöschten Browserdaten fügst du ihn wieder ein.',
+ bkCopy:'Kopieren', bkCopied:'Kopiert', bkImport:'Aus dem Text oben wiederherstellen', bkClose:'Schließen', bkBad:'Dieser Text ließ sich nicht lesen — prüfe, ob du alles eingefügt hast.',
+ addDay:'＋ Abschnitt hinzufügen', addDayEnd:'＋ Abschnitt am Ende anfügen', addWeek:'＋ Zeile hinzufügen', addCard:'＋ Karte hinzufügen', addStrip:'＋ Feld hinzufügen', addNote:'＋ Notiz hinzufügen', addItem:'＋ Zeile hinzufügen',
+ tipDrag:'Zum Umsortieren ziehen', tipColor:'Farbe wählen', tipDel:'Löschen',
+ insDay:'Abschnitt rechts einfügen', insWeek:'Zeile darunter einfügen', insCard:'Karte danach einfügen', insStrip:'Feld rechts einfügen', insNote:'Notiz danach einfügen', insItem:'Zeile einfügen',
+ hint:'Oben rechts an jedem Modul: ⠿ ziehen zum Sortieren · Punkt für die Farbe · ＋ an dieser Stelle einfügen · ✕ löschen',
+ palCustom:'Eigene Farbe…',
+ phTime:'Zeit', phNote:'Hinweis', phName:'Was du tust', phRowName:'Name', phRowSub:'Notiz', phCell:'—',
+ phEyebrow:'Nr. · Kategorie', phCardTitle:'Titel', phItem:'Eine Regel schreiben', phLabel:'Bezeichnung',
+ phSecTitle:'Abschnittstitel', phSecDesc:'Kurze Erklärung zu diesem Abschnitt (optional)', phNoteLabel:'Überschrift', phNoteBody:'Hier schreiben. Enter für eine neue Zeile — so lang du willst.',
+ phTitle:'Gib deinem Plan einen Namen', phLede:'Ein Satz dazu, wofür dieser Plan ist (optional)',
+ plans:'Meine Pläne', newPlan:'＋ Neuer Plan…', dupPlan:'Duplizieren', renPlan:'Umbenennen', delPlan:'Diesen Plan löschen',
+ delT:'Diesen Plan löschen?', delD:'Nur dieser eine verschwindet, die anderen bleiben unberührt. Das lässt sich nicht rückgängig machen.', del:'Löschen',
+ renT:'Diesen Plan umbenennen', renPh:'Name des Plans', save:'Speichern',
+ back:'← Zurück zum aktuellen Plan', stSubMore:'Noch einen Plan anlegen. Dein bisheriger bleibt genau so, wie er ist — über „Meine Pläne“ oben wechselst du jederzeit zurück.',
+ untitled:'Unbenannter Plan', copySuffix:'Kopie', importName:'Importierter Plan',
+ prev:'Zurück: anderen Anfang wählen', stSubRe:'Wähle einen anderen Anfang. Der Inhalt dieses Plans wird ersetzt; deine anderen Pläne bleiben unberührt.',
+ reT:'Inhalt dieses Plans ersetzen?', reD:'Du hast diesen Plan schon bearbeitet; eine neue Vorlage löscht diese Änderungen. Um beide zu behalten, nimm oben „Meine Pläne → Neuer Plan“.', replace:'Ersetzen',
+ phAny:'Eingeben…', phStatV:'0', phStatL:'Bezeichnung',
+ newDay:'Neuer Abschnitt', newWeek:'Neue Zeile', newCardEye:'Neue Kategorie', newCard:'Neue Regel', newStrip:'Neues Feld', newNote:'Neue Notiz', newItem:'Zeile schreiben',
+ days:['Mo','Di','Mi','Do','Fr','Sa','So'],
+ colors:['Blau','Hellblau','Dunkelblau','Petrol','Grün','Oliv','Grasgrün','Gelb','Orange','Rot','Pink','Violett','Grau','Graphit']
+}};
+
+const PRESETS = ['#0071e3','#5AA9E6','#2B4C7E','#14867D','#2E7D46','#5E8C6A','#7FA83F',
+                 '#C8A415','#C77D2B','#E0392B','#D9548A','#7D6BB0','#9AA0A6','#4A4A4F'];
+
+/* ═══════════ 1. 模板 ═══════════ */
+const DEMO = {
+'zh-Hans':{
+ title:'弹性周轨道表',
+ lede:'一天是一条轨道：桩钉死，弹性段可涨。钟点只是刻度 —— 起床晚一小时，整条往后平移。',
+ stats:[['3–4 h','数学 / 天'],['4 h','数学硬上限'],['5–6.5 h','学习总量'],['3 ×','力量训练 / 周'],['22:30','不开新局']],
+ sec:{day:['一日轨道','从左到右一条走完。块的宽度按分钟数自动成比例 —— 改时长，宽度跟着变。'],
+      week:['一周分配','横着看一行 = 一件事整周怎么排；竖着看一列 = 某天长什么样。'],
+      rules:['运行规则','计划不会失败在"排得不好"，只会失败在超时那一刻不知道砍谁。'],
+      card:['每日卡片','前一天 20:45 填好。只写具体到能直接开始的内容 —— 不写"学数学"，写"Papula 4.2 复数的极坐标形式"。'],
+      notes:['备注','不属于上面任何一栏的东西都放这儿。想加多少块就加多少块，每块可以写成一整段。']},
+ day:[['07:00','起床 · 洗漱','桩',30,5,0],['07:30','早餐','桩',30,5,0],
+      ['08:00','D1 · 数学输入','弹性 · 精力峰值',90,0,110],['09:30','休息','离桌不刷手机',20,12,0],
+      ['09:50','D2 · 数学做题','弹性 · 精力峰值',90,0,110],['11:20','休息','',20,12,0],
+      ['11:40','D3 · 数学缓冲','专留给超时',50,1,0],['12:30','做饭 + 午餐','桩',60,5,0],
+      ['13:30','散步 + 通话','桩 · 女朋友',30,5,0],['14:00','主题段 A','弹性 · 按星期轮换',120,8,150],
+      ['16:00','买菜 / 杂事','可跳过',45,12,0],['16:45','健身','桩 · 训练日',75,5,0],
+      ['18:00','做饭 + 晚餐','桩',75,5,0],['19:15','主题段 B','可跳过',90,8,0],
+      ['20:45','收尾卡片','桩',20,12,0],['21:05','彩虹六号 / 长通话','晚间格 · 二选一',85,11,0],
+      ['22:30','收手 · 洗漱','23:00 睡',30,5,0]],
+ week:{rows:[
+   ['日型','',12,['数学重日','视频日','数学重日','视频日','数学重日','创作日','休整日']],
+   ['数学','08:00 起',0,['4 h · D1+D2+D3','3 h · D1+D2','4 h · D1+D2+D3','3 h · D1+D2','4 h · D1+D2+D3','60′ 只维持保温','45′ 错题本 / 或 0']],
+   ['主题段 A','14:00 起',8,['Blender 90′','拍摄 150′','Blender 90′','剪辑 150′','Blender 90′','拍摄 + 剪辑 180′','大采购 90′']],
+   ['主题段 B','19:15 起 · 可跳过',8,['错题 / Anki','素材整理','拉片 / 教程','剪辑续摊','周内数学补漏','出成片','周复盘 30′']],
+   ['健身','16:45 起',5,['力量','休息','力量','休息','力量','有氧 / 长走','休息']],
+   ['女朋友','每天午休 30′ 短通话',10,['—','长通话 60–75′','—','—','长通话 60–75′','—','长通话 60–75′']],
+   ['彩虹六号','21:05 起 · 晚间格',11,['2–3 局','—','2–3 局','2–3 局','—','开黑长局','—']],
+   ['生活','',5,['做饭','做饭','补货买菜','做饭','做饭','做饭','备餐 90′']]]},
+ weekNote:'周二 / 周四的 150 分钟拍摄与剪辑，时间是从当天的 D3 缓冲段和健身让出来的 —— 所以视频日数学只跑 3 小时，也不安排训练。周日的备餐 90 分钟，是周一到周五每天做饭只花 30 分钟的前提。',
+ cards:[
+  ['01 · 质量闸门','关灯测试，不数题量',0,[
+   'D1、D2 结束前留 10 分钟：合上讲义、笔记、答案，白纸上写出主线 —— 定义 → 定理 → 为什么能这么推 → 一个最小例子。',
+   '写得出来 = 这段合格，哪怕一道题没做。','写不出来 = 下一段继续这块，不推进度。',
+   '不设题量。标准是"能独立做出一道没见过的同类题"，不是刷完整张 Übungsblatt。','错题本只抄卡住的那一步，不抄整题。']],
+  ['02 · 超时顺位','数学做不完是预期，不是失控',9,[
+   '吃 D3 缓冲 50′ → 主题段 A 降到 30′ → 取消主题段 B → 停。',
+   '到 4 小时还没搞完，在卡片写一行"明天 D1 从这里继续"，收工。',
+   '剪辑同理：只能吃主题段 B，不许往第二天借，不许熬夜赶一条练手的片子。','晚间格不参与让位 —— 它是回血，不是库存。']],
+  ['03 · 不可挤掉','这五件是产能，不是奖励',5,[
+   '三餐 + 睡够 23:00–07:00','训练日的那 75 分钟健身','午休 30′ 的散步 + 通话',
+   '20:45 那 20 分钟收尾卡片','22:30 收手 —— 无论在打游戏、通话还是剪片']],
+  ['04 · 硬上限','每件事都有天花板',8,[
+   '数学 4 h / 天。再往上吸收效率不值得。',
+   '彩虹六号 22:30 不开新局。一局约 35′，21:05 开局刚好 2–3 局，赢了也不加局。',
+   '晚间格二选一：长通话的晚上不打游戏，打游戏的晚上不排长通话。','Blender 固定 60–90′，不加不减。它是长期投资，不要求今天出成果。']]],
+ strip:[['D1 数学 · 90′','line','',0],['D2 数学 · 90′','line','',0],['D3 缓冲 · 50′','line','',0],
+        ['主题段 A · 90–150′','line','',0],['主题段 B · 60′ 可跳','line','',0],
+        ['⭐ 今天做到这件就算赢','line','',1],['健身','box','☐ 力量　☐ 有氧　☐ 休',0],
+        ['晚间格 · 生活','box','☐ R6　☐ 长通话<br>☐ 买菜　☐ 备餐',0]],
+ notes:[['保底日',9,'生病、出门、状态崩了 → D1 数学 60′ + 散步 30′，其余全砍，不补，不愧疚。\n\n连续性比单日总量重要：一天只做 60 分钟但没断，强过停三天再补 6 小时。'],
+        ['随手记',12,'这块可以随便写、随便加 —— 本周要买的东西、教授说的重点、想拍的镜头、想建的模型。\n\n可以按回车换行写成一整段，右上角 ＋ 再加一块，✕ 删掉。']]
+},
+'zh-Hant':{
+ title:'彈性週軌道表',
+ lede:'一天是一條軌道：樁釘死，彈性段可漲。鐘點只是刻度 —— 起床晚一小時，整條往後平移。',
+ stats:[['3–4 h','數學 / 天'],['4 h','數學硬上限'],['5–6.5 h','學習總量'],['3 ×','力量訓練 / 週'],['22:30','不開新局']],
+ sec:{day:['一日軌道','從左到右一條走完。塊的寬度按分鐘數自動成比例 —— 改時長，寬度跟著變。'],
+      week:['一週分配','橫著看一行 = 一件事整週怎麼排；豎著看一列 = 某天長什麼樣。'],
+      rules:['運行規則','計畫不會失敗在「排得不好」，只會失敗在超時那一刻不知道砍誰。'],
+      card:['每日卡片','前一天 20:45 填好。只寫具體到能直接開始的內容 —— 不寫「讀數學」，寫「Papula 4.2 複數的極座標形式」。'],
+      notes:['備註','不屬於上面任何一欄的東西都放這兒。想加多少塊就加多少塊，每塊可以寫成一整段。']},
+ day:[['07:00','起床 · 洗漱','樁',30,5,0],['07:30','早餐','樁',30,5,0],
+      ['08:00','D1 · 數學輸入','彈性 · 精力峰值',90,0,110],['09:30','休息','離桌不刷手機',20,12,0],
+      ['09:50','D2 · 數學做題','彈性 · 精力峰值',90,0,110],['11:20','休息','',20,12,0],
+      ['11:40','D3 · 數學緩衝','專留給超時',50,1,0],['12:30','做飯 + 午餐','樁',60,5,0],
+      ['13:30','散步 + 通話','樁 · 女朋友',30,5,0],['14:00','主題段 A','彈性 · 按星期輪換',120,8,150],
+      ['16:00','買菜 / 雜事','可跳過',45,12,0],['16:45','健身','樁 · 訓練日',75,5,0],
+      ['18:00','做飯 + 晚餐','樁',75,5,0],['19:15','主題段 B','可跳過',90,8,0],
+      ['20:45','收尾卡片','樁',20,12,0],['21:05','虹彩六號 / 長通話','夜間格 · 二選一',85,11,0],
+      ['22:30','收手 · 洗漱','23:00 睡',30,5,0]],
+ week:{rows:[
+   ['日型','',12,['數學重日','影片日','數學重日','影片日','數學重日','創作日','休整日']],
+   ['數學','08:00 起',0,['4 h · D1+D2+D3','3 h · D1+D2','4 h · D1+D2+D3','3 h · D1+D2','4 h · D1+D2+D3','60′ 只維持保溫','45′ 錯題本 / 或 0']],
+   ['主題段 A','14:00 起',8,['Blender 90′','拍攝 150′','Blender 90′','剪輯 150′','Blender 90′','拍攝 + 剪輯 180′','大採購 90′']],
+   ['主題段 B','19:15 起 · 可跳過',8,['錯題 / Anki','素材整理','拉片 / 教程','剪輯續攤','週內數學補漏','出成片','週複盤 30′']],
+   ['健身','16:45 起',5,['力量','休息','力量','休息','力量','有氧 / 長走','休息']],
+   ['女朋友','每天午休 30′ 短通話',10,['—','長通話 60–75′','—','—','長通話 60–75′','—','長通話 60–75′']],
+   ['虹彩六號','21:05 起 · 夜間格',11,['2–3 局','—','2–3 局','2–3 局','—','開黑長局','—']],
+   ['生活','',5,['做飯','做飯','補貨買菜','做飯','做飯','做飯','備餐 90′']]]},
+ weekNote:'週二 / 週四的 150 分鐘拍攝與剪輯，時間是從當天的 D3 緩衝段和健身讓出來的 —— 所以影片日數學只跑 3 小時，也不安排訓練。週日的備餐 90 分鐘，是週一到週五每天做飯只花 30 分鐘的前提。',
+ cards:[
+  ['01 · 品質閘門','關燈測試，不數題量',0,[
+   'D1、D2 結束前留 10 分鐘：合上講義、筆記、答案，白紙上寫出主線 —— 定義 → 定理 → 為什麼能這麼推 → 一個最小例子。',
+   '寫得出來 = 這段合格，哪怕一道題沒做。','寫不出來 = 下一段繼續這塊，不推進度。',
+   '不設題量。標準是「能獨立做出一道沒見過的同類題」，不是刷完整張 Übungsblatt。','錯題本只抄卡住的那一步，不抄整題。']],
+  ['02 · 超時順位','數學做不完是預期，不是失控',9,[
+   '吃 D3 緩衝 50′ → 主題段 A 降到 30′ → 取消主題段 B → 停。',
+   '到 4 小時還沒搞完，在卡片寫一行「明天 D1 從這裡繼續」，收工。',
+   '剪輯同理：只能吃主題段 B，不許往第二天借，不許熬夜趕一條練手的片子。','夜間格不參與讓位 —— 它是回血，不是庫存。']],
+  ['03 · 不可擠掉','這五件是產能，不是獎勵',5,[
+   '三餐 + 睡夠 23:00–07:00','訓練日的那 75 分鐘健身','午休 30′ 的散步 + 通話',
+   '20:45 那 20 分鐘收尾卡片','22:30 收手 —— 無論在打遊戲、通話還是剪片']],
+  ['04 · 硬上限','每件事都有天花板',8,[
+   '數學 4 h / 天。再往上吸收效率不值得。',
+   '虹彩六號 22:30 不開新局。一局約 35′，21:05 開局剛好 2–3 局，贏了也不加局。',
+   '夜間格二選一：長通話的晚上不打遊戲，打遊戲的晚上不排長通話。','Blender 固定 60–90′，不加不減。它是長期投資，不要求今天出成果。']]],
+ strip:[['D1 數學 · 90′','line','',0],['D2 數學 · 90′','line','',0],['D3 緩衝 · 50′','line','',0],
+        ['主題段 A · 90–150′','line','',0],['主題段 B · 60′ 可跳','line','',0],
+        ['⭐ 今天做到這件就算贏','line','',1],['健身','box','☐ 力量　☐ 有氧　☐ 休',0],
+        ['夜間格 · 生活','box','☐ R6　☐ 長通話<br>☐ 買菜　☐ 備餐',0]],
+ notes:[['保底日',9,'生病、出門、狀態崩了 → D1 數學 60′ + 散步 30′，其餘全砍，不補，不愧疚。\n\n連續性比單日總量重要：一天只做 60 分鐘但沒斷，強過停三天再補 6 小時。'],
+        ['隨手記',12,'這塊可以隨便寫、隨便加 —— 本週要買的東西、教授說的重點、想拍的鏡頭、想建的模型。\n\n可以按 Enter 換行寫成一整段，右上角 ＋ 再加一塊，✕ 刪掉。']]
+},
+'en':{
+ title:'The elastic week',
+ lede:'A day is one rail: the posts are fixed, the elastic stretches. Clock times are only a scale — get up an hour late and the whole rail shifts with you.',
+ stats:[['3–4 h','maths / day'],['4 h','hard ceiling'],['5–6.5 h','study total'],['3 ×','strength / week'],['22:30','no new match']],
+ sec:{day:['The day rail','One pass, left to right. Each block is as wide as its minutes — change the duration and the width follows.'],
+      week:['The week','Read across a row to see how one thing is spread over the week; read down a column to see what a given day looks like.'],
+      rules:['House rules','A plan never fails because the layout was wrong. It fails at the moment you run over and do not know what to cut.'],
+      card:['Daily card','Fill it in the night before at 20:45. Write only what you can start on immediately — not "study maths" but "Papula 4.2, polar form of complex numbers".'],
+      notes:['Notes','Anything that fits none of the columns above goes here. Add as many blocks as you like; each one can hold a whole paragraph.']},
+ day:[['07:00','Up · wash','post',30,5,0],['07:30','Breakfast','post',30,5,0],
+      ['08:00','D1 · maths, input','elastic · peak hours',90,0,110],['09:30','Break','leave the desk, no phone',20,12,0],
+      ['09:50','D2 · maths, problems','elastic · peak hours',90,0,110],['11:20','Break','',20,12,0],
+      ['11:40','D3 · maths buffer','kept for overruns',50,1,0],['12:30','Cook + lunch','post',60,5,0],
+      ['13:30','Walk + call','post · girlfriend',30,5,0],['14:00','Theme block A','elastic · rotates by weekday',120,8,150],
+      ['16:00','Groceries / errands','skippable',45,12,0],['16:45','Gym','post · training day',75,5,0],
+      ['18:00','Cook + dinner','post',75,5,0],['19:15','Theme block B','skippable',90,8,0],
+      ['20:45','Fill the card','post',20,12,0],['21:05','Rainbow Six / long call','evening slot · one or the other',85,11,0],
+      ['22:30','Stop · wind down','lights out 23:00',30,5,0]],
+ week:{rows:[
+   ['Day type','',12,['Maths-heavy','Video','Maths-heavy','Video','Maths-heavy','Making','Recovery']],
+   ['Maths','from 08:00',0,['4 h · D1+D2+D3','3 h · D1+D2','4 h · D1+D2+D3','3 h · D1+D2','4 h · D1+D2+D3','60′ keep warm only','45′ error log / or 0']],
+   ['Theme block A','from 14:00',8,['Blender 90′','Filming 150′','Blender 90′','Editing 150′','Blender 90′','Film + edit 180′','Big shop 90′']],
+   ['Theme block B','from 19:15 · skippable',8,['Error log / Anki','Sort footage','Study films / tutorials','More editing','Patch the week’s maths','Finish a cut','Weekly review 30′']],
+   ['Gym','from 16:45',5,['Strength','Rest','Strength','Rest','Strength','Cardio / long walk','Rest']],
+   ['Girlfriend','30′ short call at every lunch',10,['—','Long call 60–75′','—','—','Long call 60–75′','—','Long call 60–75′']],
+   ['Rainbow Six','from 21:05 · evening slot',11,['2–3 matches','—','2–3 matches','2–3 matches','—','Long session','—']],
+   ['Life','',5,['Cook','Cook','Top-up shop','Cook','Cook','Cook','Batch cook 90′']]]},
+ weekNote:'The 150 minutes of filming and editing on Tuesday and Thursday come out of that day’s D3 buffer and gym slot — which is why maths runs only 3 hours on video days and no training is scheduled. The 90 minutes of batch cooking on Sunday is what keeps weekday cooking down to 30 minutes.',
+ cards:[
+  ['01 · Quality gate','The lights-out test, not a problem count',0,[
+   'Leave 10 minutes at the end of D1 and D2: shut the notes, the lecture handout and the answers, and write the thread on a blank sheet — definition → theorem → why the step is allowed → one minimal example.',
+   'You can write it = the block passed, even if you solved nothing.','You cannot = the next block stays on this topic. Do not move the syllabus forward.',
+   'No problem quota. The bar is "I can solve one unseen problem of this kind", not "I finished the whole sheet".','The error log gets only the step you got stuck on, never the whole problem.']],
+  ['02 · What gives way','Running over on maths is expected, not a loss of control',9,[
+   'Eat the D3 buffer, 50′ → cut theme block A to 30′ → drop theme block B → stop.',
+   'Still not done at 4 hours: write "tomorrow D1 continues here" on the card and finish for the day.',
+   'Editing works the same way: it may only eat theme block B. Never borrow from tomorrow, never stay up to finish a practice cut.','The evening slot never gives way — it is recovery, not stock.']],
+  ['03 · Untouchable','These five are capacity, not a reward',5,[
+   'Three meals, and 23:00–07:00 asleep','The 75 minutes of gym on a training day','The 30′ lunchtime walk and call',
+   'The 20 minutes at 20:45 for the card','Stopping at 22:30 — mid-match, mid-call or mid-edit']],
+  ['04 · Ceilings','Everything has a roof',8,[
+   'Maths, 4 h a day. Past that the absorption is not worth the hours.',
+   'Rainbow Six: no new match after 22:30. A match is about 35′, so starting at 21:05 is exactly 2–3 of them. Winning does not buy another.',
+   'The evening slot is one or the other: no gaming on a long-call night, no long call on a gaming night.','Blender stays at 60–90′, no more and no less. It is a long investment and owes you nothing today.']]],
+ strip:[['D1 maths · 90′','line','',0],['D2 maths · 90′','line','',0],['D3 buffer · 50′','line','',0],
+        ['Theme block A · 90–150′','line','',0],['Theme block B · 60′, skippable','line','',0],
+        ['⭐ Do this one thing and the day counts','line','',1],['Gym','box','☐ Strength　☐ Cardio　☐ Rest',0],
+        ['Evening slot · life','box','☐ R6　☐ Long call<br>☐ Groceries　☐ Batch cook',0]],
+ notes:[['Floor day',9,'Ill, travelling, or the day fell apart → D1 maths 60′ + a 30′ walk. Cut everything else, do not make it up, do not feel bad about it.\n\nNot breaking the chain beats any single day’s total: 60 minutes every day is worth more than three days off and then a six-hour catch-up.'],
+        ['Scratch pad',12,'Write and add whatever you like here — the shopping for this week, the thing the professor stressed, a shot you want to film, a model you want to build.\n\nPress Return for a new line and write a whole paragraph. ＋ at the top right adds another block, ✕ removes one.']]
+},
+'de':{
+ title:'Die elastische Woche',
+ lede:'Ein Tag ist eine Strecke: Die Pfosten stehen, das Elastische darf wachsen. Uhrzeiten sind nur eine Skala — stehst du eine Stunde später auf, verschiebt sich die ganze Strecke mit.',
+ stats:[['3–4 h','Mathe / Tag'],['4 h','harte Grenze'],['5–6,5 h','Lernen gesamt'],['3 ×','Kraft / Woche'],['22:30','keine neue Runde']],
+ sec:{day:['Die Tagesstrecke','In einem Durchgang von links nach rechts. Jeder Block ist so breit wie seine Minuten — ändere die Dauer, und die Breite folgt.'],
+      week:['Die Woche','Eine Zeile quer gelesen zeigt, wie eine Sache über die Woche verteilt ist; eine Spalte von oben nach unten zeigt, wie ein Tag aussieht.'],
+      rules:['Betriebsregeln','Ein Plan scheitert nie daran, dass er schlecht aufgebaut war. Er scheitert in dem Moment, in dem du überziehst und nicht weißt, was wegfällt.'],
+      card:['Tageskarte','Am Vorabend um 20:45 ausfüllen. Schreib nur, was du sofort anfangen kannst — nicht „Mathe lernen“, sondern „Papula 4.2, Polarform komplexer Zahlen“.'],
+      notes:['Notizen','Alles, was in keine Spalte oben passt, kommt hierher. Füge so viele Blöcke hinzu, wie du willst; in jeden passt ein ganzer Absatz.']},
+ day:[['07:00','Aufstehen · waschen','Pfosten',30,5,0],['07:30','Frühstück','Pfosten',30,5,0],
+      ['08:00','D1 · Mathe, Aufnahme','elastisch · beste Stunden',90,0,110],['09:30','Pause','vom Schreibtisch weg, kein Handy',20,12,0],
+      ['09:50','D2 · Mathe, Aufgaben','elastisch · beste Stunden',90,0,110],['11:20','Pause','',20,12,0],
+      ['11:40','D3 · Mathe-Puffer','für das Überziehen reserviert',50,1,0],['12:30','Kochen + Mittag','Pfosten',60,5,0],
+      ['13:30','Spaziergang + Telefonat','Pfosten · Freundin',30,5,0],['14:00','Themenblock A','elastisch · wechselt je Wochentag',120,8,150],
+      ['16:00','Einkauf / Erledigungen','entfällt notfalls',45,12,0],['16:45','Sport','Pfosten · Trainingstag',75,5,0],
+      ['18:00','Kochen + Abendessen','Pfosten',75,5,0],['19:15','Themenblock B','entfällt notfalls',90,8,0],
+      ['20:45','Karte ausfüllen','Pfosten',20,12,0],['21:05','Rainbow Six / langes Telefonat','Abendfeld · eins von beiden',85,11,0],
+      ['22:30','Schluss · runterkommen','23:00 Licht aus',30,5,0]],
+ week:{rows:[
+   ['Tagestyp','',12,['Mathe-Tag','Video','Mathe-Tag','Video','Mathe-Tag','Produktion','Erholung']],
+   ['Mathe','ab 08:00',0,['4 h · D1+D2+D3','3 h · D1+D2','4 h · D1+D2+D3','3 h · D1+D2','4 h · D1+D2+D3','60′ nur warmhalten','45′ Fehlerheft / oder 0']],
+   ['Themenblock A','ab 14:00',8,['Blender 90′','Drehen 150′','Blender 90′','Schnitt 150′','Blender 90′','Drehen + Schnitt 180′','Großeinkauf 90′']],
+   ['Themenblock B','ab 19:15 · entfällt notfalls',8,['Fehlerheft / Anki','Material sortieren','Filme / Tutorials','Schnitt weiter','Mathe-Lücken der Woche','Fassung fertig machen','Wochenrückblick 30′']],
+   ['Sport','ab 16:45',5,['Kraft','Ruhe','Kraft','Ruhe','Kraft','Ausdauer / langer Spaziergang','Ruhe']],
+   ['Freundin','täglich 30′ kurz in der Mittagspause',10,['—','Langes Telefonat 60–75′','—','—','Langes Telefonat 60–75′','—','Langes Telefonat 60–75′']],
+   ['Rainbow Six','ab 21:05 · Abendfeld',11,['2–3 Runden','—','2–3 Runden','2–3 Runden','—','Lange Session','—']],
+   ['Alltag','',5,['Kochen','Kochen','Nachkaufen','Kochen','Kochen','Kochen','Vorkochen 90′']]]},
+ weekNote:'Die 150 Minuten Drehen und Schneiden am Dienstag und Donnerstag kommen aus dem D3-Puffer und dem Sportfeld des jeweiligen Tages — deshalb läuft Mathe an Video-Tagen nur 3 Stunden und es ist kein Training eingeplant. Die 90 Minuten Vorkochen am Sonntag sind die Voraussetzung dafür, dass Kochen unter der Woche nur 30 Minuten kostet.',
+ cards:[
+  ['01 · Qualitätsschranke','Der Licht-aus-Test, keine Aufgabenzahl',0,[
+   'Lass am Ende von D1 und D2 zehn Minuten: Skript, Notizen und Lösungen zuklappen und den roten Faden auf ein leeres Blatt schreiben — Definition → Satz → warum der Schritt erlaubt ist → ein minimales Beispiel.',
+   'Du kannst es hinschreiben = der Block gilt, auch wenn keine Aufgabe gerechnet wurde.','Du kannst es nicht = der nächste Block bleibt bei diesem Thema. Der Stoff rückt nicht vor.',
+   'Keine Aufgabenquote. Der Maßstab ist „ich löse eine ungesehene Aufgabe dieser Art allein“, nicht „das Übungsblatt ist durch“.','Ins Fehlerheft kommt nur der Schritt, an dem du hängen geblieben bist, nie die ganze Aufgabe.']],
+  ['02 · Was nachgibt','Überziehen bei Mathe ist eingeplant, kein Kontrollverlust',9,[
+   'Erst den D3-Puffer, 50′ → dann Themenblock A auf 30′ → dann Themenblock B ganz weg → Schluss.',
+   'Nach 4 Stunden noch nicht fertig: „morgen macht D1 hier weiter“ auf die Karte schreiben und Schluss machen.',
+   'Für den Schnitt gilt dasselbe: Er darf nur Themenblock B nehmen. Nie beim nächsten Tag borgen, nie nachts eine Übungsfassung fertig machen.','Das Abendfeld gibt nie nach — es ist Erholung, kein Vorrat.']],
+  ['03 · Unantastbar','Diese fünf sind Kapazität, keine Belohnung',5,[
+   'Drei Mahlzeiten und 23:00–07:00 Schlaf','Die 75 Minuten Sport am Trainingstag','Die 30′ Spaziergang mit Telefonat mittags',
+   'Die 20 Minuten um 20:45 für die Karte','Um 22:30 Schluss — mitten in der Runde, im Gespräch oder im Schnitt']],
+  ['04 · Obergrenzen','Alles hat ein Dach',8,[
+   'Mathe 4 h am Tag. Darüber ist die Aufnahme die Stunden nicht wert.',
+   'Rainbow Six: nach 22:30 keine neue Runde. Eine Runde dauert etwa 35′, ab 21:05 sind das genau 2–3. Ein Sieg kauft keine weitere.',
+   'Das Abendfeld ist eins von beiden: kein Spielen an einem Telefonabend, kein langes Telefonat an einem Spielabend.','Blender bleibt bei 60–90′, nicht mehr und nicht weniger. Es ist eine lange Investition und schuldet dir heute nichts.']]],
+ strip:[['D1 Mathe · 90′','line','',0],['D2 Mathe · 90′','line','',0],['D3 Puffer · 50′','line','',0],
+        ['Themenblock A · 90–150′','line','',0],['Themenblock B · 60′, entfällt notfalls','line','',0],
+        ['⭐ Dieses eine Ding, und der Tag zählt','line','',1],['Sport','box','☐ Kraft　☐ Ausdauer　☐ Ruhe',0],
+        ['Abendfeld · Alltag','box','☐ R6　☐ Telefonat<br>☐ Einkauf　☐ Vorkochen',0]],
+ notes:[['Minimaltag',9,'Krank, unterwegs, oder der Tag ist zerfallen → D1 Mathe 60′ + 30′ Spaziergang. Alles andere fällt weg, wird nicht nachgeholt, und kostet kein schlechtes Gewissen.\n\nDie Kette nicht zu reißen ist mehr wert als die Summe eines einzelnen Tages: 60 Minuten jeden Tag schlagen drei Tage Pause und danach sechs Stunden Aufholen.'],
+        ['Zettelkasten',12,'Hier darfst du schreiben und anfügen, was du willst — der Einkauf dieser Woche, worauf der Professor Wert gelegt hat, eine Einstellung, die du drehen willst, ein Modell, das du bauen willst.\n\nEnter macht eine neue Zeile, also schreib ruhig einen ganzen Absatz. ＋ oben rechts fügt einen Block dazu, ✕ nimmt einen weg.']]
+}};
+
+/* ═══════════ 2. 状态 ═══════════ */
+const KEY = 'rail-planner-v3', LKEY = 'rail-planner-lang';
+const $ = s => document.querySelector(s);
+const app = $('#app'), statusEl = $('#status'), pal = $('#pal'), startEl = $('#start');
+const esc = v => String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const uid = p => p + Math.random().toString(36).slice(2,8);
+const ED = 'contenteditable="plaintext-only"';
+
+let lang = pickLang(), t = UI[lang], state = null, mode = 'edit', saveTimer = null;
+
+function pickLang(){
+  try { const s = localStorage.getItem(LKEY); if (s && UI[s]) return s; } catch(e){}
+  const n = (navigator.languages && navigator.languages[0]) || navigator.language || 'en';
+  const l = n.toLowerCase();
+  if (l.startsWith('de')) return 'de';
+  if (l.startsWith('zh')) return /hant|tw|hk|mo/.test(l) ? 'zh-Hant' : 'zh-Hans';
+  return 'en';
+}
+
+/* 模板构造 —— demo（填好的）/ blank（只有骨架）/ min（极简） */
+function demoState(L){
+  const d = DEMO[L], D = UI[L].days;
+  return {
+    v:3, title:d.title, lede:d.lede,
+    stats:d.stats.map(([value,label]) => ({id:uid('s'), value, label})),
+    sections:{day:sec(d,'day'), week:sec(d,'week'), rules:sec(d,'rules'), card:sec(d,'card'), notes:sec(d,'notes')},
+    day:d.day.map(([time,name,note,dur,ci,up]) => {
+      const o = {id:uid('d'), time, name, note, dur, color:PRESETS[ci]};
+      if (up) o.up = up; return o;
+    }),
+    week:{days:D.slice(), rows:d.week.rows.map(([label,sub,ci,cells]) =>
+      ({id:uid('w'), label, sub, color:PRESETS[ci], cells:cells.slice()}))},
+    weekNote:d.weekNote,
+    cards:d.cards.map(([eyebrow,title,ci,items]) =>
+      ({id:uid('c'), eyebrow, title, color:PRESETS[ci], items:items.slice()})),
+    strip:d.strip.map(([label,kind,text,hi]) => {
+      const o = {id:uid('p'), label, kind, text}; if (hi) o.hi = 1; return o;
+    }),
+    notes:d.notes.map(([label,ci,text]) => ({id:uid('n'), label, color:PRESETS[ci], text}))
+  };
+}
+const sec = (d,k) => ({title:d.sec[k][0], desc:d.sec[k][1]});
+
+function blankState(L){
+  const d = DEMO[L], D = UI[L].days;
+  const times = ['07:00','08:00','09:30','11:00','12:30','14:00','16:00','17:30','19:00','21:00'];
+  return {
+    v:3, title:'', lede:'',
+    stats:[0,1,2].map(() => ({id:uid('s'), value:'', label:''})),
+    sections:{day:{title:d.sec.day[0], desc:''}, week:{title:d.sec.week[0], desc:''},
+              rules:{title:d.sec.rules[0], desc:''}, card:{title:d.sec.card[0], desc:''},
+              notes:{title:d.sec.notes[0], desc:''}},
+    day:times.map((time,i) => ({id:uid('d'), time, name:'', note:'', dur:i === 0 ? 60 : 90,
+                                color:PRESETS[[0,5,8,12,0,5,8,12,11,5][i]]})),
+    week:{days:D.slice(), rows:[0,1,2,3,4,5].map(i =>
+      ({id:uid('w'), label:'', sub:'', color:PRESETS[[0,5,8,11,12,1][i]], cells:D.map(() => '')}))},
+    weekNote:'',
+    cards:[0,1,2].map(i => ({id:uid('c'), eyebrow:'', title:'', color:PRESETS[[0,9,5][i]], items:['','','']})),
+    strip:[0,1,2,3,4,5,6].map(() => ({id:uid('p'), label:'', kind:'line', text:''})),
+    notes:[0,1].map(i => ({id:uid('n'), label:'', color:PRESETS[[12,5][i]], text:''}))
+  };
+}
+
+function minState(L){
+  const d = DEMO[L], D = UI[L].days;
+  return {
+    v:3, title:'', lede:'',
+    stats:[{id:uid('s'), value:'', label:''}],
+    sections:{day:{title:d.sec.day[0], desc:''}, week:{title:d.sec.week[0], desc:''},
+              rules:{title:d.sec.rules[0], desc:''}, card:{title:d.sec.card[0], desc:''},
+              notes:{title:d.sec.notes[0], desc:''}},
+    day:[{id:uid('d'), time:'', name:'', note:'', dur:60, color:PRESETS[0]}],
+    week:{days:D.slice(), rows:[{id:uid('w'), label:'', sub:'', color:PRESETS[0], cells:D.map(() => '')}]},
+    weekNote:'',
+    cards:[{id:uid('c'), eyebrow:'', title:'', color:PRESETS[0], items:['']}],
+    strip:[{id:uid('p'), label:'', kind:'line', text:''}],
+    notes:[{id:uid('n'), label:'', color:PRESETS[12], text:''}]
+  };
+}
+
+/* ═══════════ 3. 存取 ═══════════ */
+const LIB = 'rail-planner-lib';
+let lib = {current:null, plans:[]};           // 计划库：每个模板选择都是新增一份，从不覆盖
+const okState = o => !!(o && o.day && o.week && o.sections);
+const curPlan = () => lib.plans.find(p => p.id === lib.current) || null;
+
+function saveLib(){
+  try { localStorage.setItem(LIB, JSON.stringify(lib)); } catch(e){}
+}
+function save(){
+  const p = curPlan();
+  if (p){ p.state = state; p.updated = Date.now(); }
+  saveLib();
+}
+function queueSave(){
+  const p = curPlan(); if (p) p.touched = true;
+  statusEl.textContent = t.saving;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { save(); statusEl.textContent = t.saved; }, 500);
+}
+function loadLib(){
+  try {
+    const raw = localStorage.getItem(LIB);
+    if (raw){ const o = JSON.parse(raw); if (o && Array.isArray(o.plans)) return o; }
+  } catch(e){}
+  /* 迁移：之前只存一份的两个老键 */
+  for (const k of [KEY, 'rail-planner-v2']){
+    try {
+      const o = JSON.parse(localStorage.getItem(k) || 'null');
+      if (okState(o)){
+        const id = uid('pl');
+        return {current:id, plans:[{id, name:(o.title || '').trim() || t.untitled, state:o, updated:Date.now()}]};
+      }
+    } catch(e){}
+  }
+  return {current:null, plans:[]};
+}
+function addPlan(name, st){
+  const p = {id:uid('pl'), name, state:st, updated:Date.now()};
+  lib.plans.push(p); lib.current = p.id; state = st;
+  saveLib(); return p;
+}
+function openPlan(id){
+  const p = lib.plans.find(x => x.id === id);
+  if (!p) return;
+  lib.current = id; state = p.state; saveLib();
+  startEl.classList.remove('on');
+  render(); paintPlanName();
+  statusEl.textContent = t.saved;
+  scrollTo(0,0);
+}
+const stamp = ms => new Date(ms).toLocaleDateString(lang === 'zh-Hans' ? 'zh-CN' : lang === 'zh-Hant' ? 'zh-TW' : lang, {month:'numeric', day:'numeric'});
+
+/* ═══════════ 4. 路径读写 ═══════════ */
+function atPath(path){
+  const parts = path.split('.');
+  let o = state;
+  for (let i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+  return [o, parts[parts.length - 1]];
+}
+const writePath = (p,v) => { const [o,k] = atPath(p); o[k] = v; };
+const readPath = p => { const [o,k] = atPath(p); return o[k]; };
+
+/* ═══════════ 5. 渲染 ═══════════ */
+function txt(path, cls, ph){
+  return `<div class="${cls || ''}" ${ED} data-bind="${path}" data-ph="${esc(ph || t.phAny)}">${esc(readPath(path))}</div>`;
+}
+const tools = parts => `<div class="tools">${parts.join('')}</div>`;
+const grip = () => `<button class="ic grip" data-grip title="${esc(t.tipDrag)}" aria-label="${esc(t.tipDrag)}">⠿</button>`;
+const del = (kind,id) => `<button class="ic del" data-del="${kind}" data-id="${id}" title="${esc(t.tipDel)}" aria-label="${esc(t.tipDel)}">✕</button>`;
+const ins = (kind,id,tip) => `<button class="ic add" data-ins="${kind}" data-id="${id}" title="${esc(tip)}" aria-label="${esc(tip)}">＋</button>`;
+function swatch(path){
+  const v = readPath(path) || '#8E8E93';
+  return `<span class="sw" style="--c:${esc(v)}" data-sw="${path}">`
+    + `<button class="swb" data-pal="${path}" title="${esc(t.tipColor)}" aria-label="${esc(t.tipColor)}"></button>`
+    + `<input type="color" value="${esc(v)}" data-color="${path}" tabindex="-1" aria-hidden="true"></span>`;
+}
+
+function render(){
+  const s = state;
+
+  const stats = s.stats.map((x,i) => `
+    <div class="stat" data-sort="stats" data-id="${x.id}">
+      ${tools([grip(), ins('stats',x.id,t.addItem), del('stat',x.id)])}
+      ${txt(`stats.${i}.value`,'sv num',t.phStatV)}
+      ${txt(`stats.${i}.label`,'sl',t.phStatL)}
+    </div>`).join('');
+
+  const cols = s.day.map(b => {
+    const d = Math.max(5, +b.dur || 5);
+    return `minmax(${Math.max(96, Math.min(200, Math.round(d * 1.15)))}px, ${d}fr)`;
+  }).join(' ') + ' minmax(76px, 40fr)';
+
+  const blocks = s.day.map((b,i) => `
+    <div class="blk tint" style="--c:${esc(b.color)};--dur:${Math.max(5, +b.dur || 5)}" data-sort="day" data-id="${b.id}">
+      ${tools([grip(), swatch(`day.${i}.color`), ins('day',b.id,t.insDay), del('day',b.id)])}
+      ${txt(`day.${i}.time`,'bt num',t.phTime)}
+      ${txt(`day.${i}.note`,'bnote',t.phNote)}
+      ${txt(`day.${i}.name`,'bn',t.phName)}
+      <div class="bd"><span ${ED} data-bind="day.${i}.dur" data-num="1" class="num" data-ph="0">${esc(b.dur)}</span>′${
+        b.up ? ` <span class="u">→ <span ${ED} data-bind="day.${i}.up" data-num="1" class="num">${esc(b.up)}</span>′</span>` : ''
+      }</div>
+    </div>`).join('');
+
+  const wcols = `minmax(152px,.95fr) repeat(${s.week.days.length}, minmax(106px,1fr))`;
+  const whead = `<div class="wrow" style="--wcols:${wcols}"><div class="wcell wcorner"></div>`
+    + s.week.days.map((d,i) => `<div class="wcell whead" ${ED} data-bind="week.days.${i}">${esc(d)}</div>`).join('')
+    + `</div>`;
+  const wrows = s.week.rows.map((r,i) => `
+    <div class="wrow" style="--wcols:${wcols}" data-sort="week" data-id="${r.id}">
+      <div class="wcell wrowhead tint" style="--c:${esc(r.color)}">
+        ${tools([grip(), swatch(`week.rows.${i}.color`), ins('week',r.id,t.insWeek), del('week',r.id)])}
+        ${txt(`week.rows.${i}.label`,'',t.phRowName)}
+        <span class="sub" ${ED} data-bind="week.rows.${i}.sub" data-ph="${esc(t.phRowSub)}">${esc(r.sub)}</span>
+      </div>
+      ${r.cells.map((c,j) => `<div class="wcell tint" style="--c:${esc(r.color)}" ${ED} data-bind="week.rows.${i}.cells.${j}" data-ph="${esc(t.phCell)}">${esc(c)}</div>`).join('')}
+    </div>`).join('');
+
+  const cards = s.cards.map((c,i) => `
+    <div class="card tint" style="--c:${esc(c.color)}" data-sort="cards" data-id="${c.id}">
+      ${tools([grip(), swatch(`cards.${i}.color`), ins('cards',c.id,t.insCard), del('cards',c.id)])}
+      ${txt(`cards.${i}.eyebrow`,'eyebrow',t.phEyebrow)}
+      <h3 ${ED} data-bind="cards.${i}.title" data-ph="${esc(t.phCardTitle)}">${esc(c.title)}</h3>
+      <ul>${c.items.map((it,j) => `
+        <li>${txt(`cards.${i}.items.${j}`,'',t.phItem)}<button class="ic del" data-del="item" data-id="${c.id}" data-j="${j}" style="position:absolute;right:0;top:1px;display:none" title="${esc(t.tipDel)}">✕</button></li>`).join('')}
+      </ul>
+      <button class="addrow" data-add="item" data-id="${c.id}">${esc(t.addItem)}</button>
+    </div>`).join('');
+
+  const scols = s.strip.map(() => 'minmax(118px,1fr)').join(' ');
+  const strip = s.strip.map((p,i) => `
+    <div class="scell ${p.hi ? 'hi' : ''}" data-sort="strip" data-id="${p.id}">
+      ${tools([grip(), ins('strip',p.id,t.insStrip), del('strip',p.id)])}
+      ${txt(`strip.${i}.label`,'slb',t.phLabel)}
+      ${p.kind === 'box'
+        ? `<div class="sbox" contenteditable="true" data-bind="strip.${i}.text" data-html="1" data-ph="☐">${p.text || ''}</div>`
+        : `<div class="sline"></div>`}
+    </div>`).join('');
+
+  const notes = s.notes.map((n,i) => `
+    <div class="note tint" style="--c:${esc(n.color)}" data-sort="notes" data-id="${n.id}">
+      ${tools([grip(), swatch(`notes.${i}.color`), ins('notes',n.id,t.insNote), del('notes',n.id)])}
+      ${txt(`notes.${i}.label`,'nlabel',t.phNoteLabel)}
+      <div class="nbody" ${ED} data-bind="notes.${i}.text" data-multi="1" data-ph="${esc(t.phNoteBody)}">${esc(n.text)}</div>
+    </div>`).join('');
+
+  const head = k => `
+      <div class="sec-head">
+        <h2 ${ED} data-bind="sections.${k}.title" data-ph="${esc(t.phSecTitle)}">${esc(s.sections[k].title)}</h2>
+        <p ${ED} data-bind="sections.${k}.desc" data-ph="${esc(t.phSecDesc)}">${esc(s.sections[k].desc)}</p>
+      </div>`;
+
+  app.innerHTML = `
+    <div class="hero">
+      <h1 ${ED} data-bind="title" data-ph="${esc(t.phTitle)}">${esc(s.title)}</h1>
+      <div class="lede" ${ED} data-bind="lede" data-ph="${esc(t.phLede)}">${esc(s.lede)}</div>
+      <div class="stats">${stats}
+        <button class="adder" data-add="stat" style="min-height:0;padding:14px 20px;border-radius:12px">＋</button>
+      </div>
+    </div>
+
+    <section>${head('day')}
+      <div class="board">
+        <div class="hscroll">
+          <div class="track" style="grid-template-columns:${cols}">${blocks}
+            <button class="adder" data-add="day">${esc(t.addDay)}</button>
+          </div>
+        </div>
+        <div class="boardbar">
+          <button class="btn addend" data-add="day">${esc(t.addDayEnd)}</button>
+          <p class="hint">${esc(t.hint)}</p>
+        </div>
+      </div>
+    </section>
+
+    <section>${head('week')}
+      <div class="board">
+        <div class="hscroll"><div class="wgrid">${whead}${wrows}</div></div>
+        <button class="addrow" data-add="week">${esc(t.addWeek)}</button>
+        <div class="caption" ${ED} data-bind="weekNote" data-ph="${esc(t.phSecDesc)}">${esc(s.weekNote)}</div>
+      </div>
+    </section>
+
+    <section>${head('rules')}
+      <div class="cards">${cards}</div>
+      <button class="addrow" data-add="card" style="max-width:230px">${esc(t.addCard)}</button>
+    </section>
+
+    <section>${head('card')}
+      <div class="board">
+        <div class="hscroll"><div class="strip" style="grid-template-columns:${scols}">${strip}</div></div>
+        <button class="addrow" data-add="strip" style="max-width:230px">${esc(t.addStrip)}</button>
+      </div>
+    </section>
+
+    <section>${head('notes')}
+      <div class="notes">${notes}</div>
+      <button class="addrow" data-add="note" style="max-width:230px">${esc(t.addNote)}</button>
+    </section>`;
+
+  wireSort();
+  applyMode();
+}
+
+/* 界面文字（与内容无关） */
+function paintChrome(){
+  document.documentElement.lang = lang;
+  $('#navBrand').textContent = t.app;
+  $('#stBrand').textContent = t.app;
+  $('#mEdit').textContent = t.edit;
+  $('#mView').textContent = t.preview;
+  $('#bPrint').textContent = t.print;
+  $('#bBackup').textContent = t.backup;
+  $('#plansT').textContent = t.plans;
+  $('#plNew').textContent = t.newPlan;
+  $('#plDup').textContent = t.dupPlan;
+  $('#plRen').textContent = t.renPlan;
+  $('#plDel').textContent = t.delPlan;
+  $('#renT').textContent = t.renT;
+  $('#renInput').placeholder = t.renPh;
+  $('#renNo').textContent = t.cancel;
+  $('#renYes').textContent = t.save;
+  $('#stBack').textContent = t.back;
+  $('#bBack').title = t.prev; $('#bBack').setAttribute('aria-label', t.prev);
+  $('#bBack').hidden = !curPlan();
+  paintPlanName();
+  $('#palCustom').textContent = t.palCustom;
+  $('#bkT').textContent = t.bkT;
+  $('#bkD').textContent = t.bkD;
+  $('#bkCopy').textContent = t.bkCopy;
+  $('#bkImport').textContent = t.bkImport;
+  $('#bkClose').textContent = t.bkClose;
+  $('#stTitle').textContent = t.stTitle;
+  $('#stSub').textContent = lib.plans.length ? t.stSubMore : t.stSub;
+  $('#stBack').hidden = !lib.plans.length;
+  $('#stFoot').textContent = t.stFoot;
+  $('#langSel').value = lang;
+  $('#langSel2').value = lang;
+  statusEl.textContent = state ? t.saved : '';
+  $('#picks').innerHTML = [
+    ['blank','#9AA0A6','pBlankT','pBlankD'],
+    ['demo','#0071e3','pDemoT','pDemoD'],
+    ['min','#5E8C6A','pMinT','pMinD']
+  ].map(([k,c,tk,dk]) => `
+    <button class="pick" data-pick="${k}" style="--pc:${c}">
+      <span class="pi"></span>
+      <b>${esc(t[tk])}</b>
+      <span>${esc(t[dk])}</span>
+      <span class="go">${esc(t.use)}</span>
+    </button>`).join('');
+}
+
+function setLang(l){
+  if (!UI[l]) return;
+  lang = l; t = UI[l];
+  try { localStorage.setItem(LKEY, l); } catch(e){}
+  paintChrome();
+  if (state) render();
+  paintPlanName();
+}
+$('#langSel').onchange = e => setLang(e.target.value);
+$('#langSel2').onchange = e => setLang(e.target.value);
+
+/* ═══════════ 6. 编辑 ═══════════ */
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-bind]');
+  if (el){
+    let v = el.dataset.html ? el.innerHTML : el.textContent;
+    if (el.dataset.num) v = v.replace(/[^\d]/g,'');
+    writePath(el.dataset.bind, el.dataset.num ? (parseInt(v,10) || 0) : v);
+    queueSave();
+    return;
+  }
+  const c = e.target.closest('[data-color]');
+  if (c) applyColor(c.dataset.color, c.value);
+});
+
+function applyColor(path, val){
+  writePath(path, val);
+  const sw = app.querySelector('[data-sw="' + path + '"]');
+  if (sw){
+    sw.style.setProperty('--c', val);
+    const inp = sw.querySelector('input[type=color]');
+    if (inp) inp.value = val;
+    const host = sw.closest('.blk, .wrowhead, .card, .note');
+    if (host){
+      host.style.setProperty('--c', val);
+      if (host.classList.contains('wrowhead')){
+        host.parentElement.querySelectorAll('.wcell.tint').forEach(x => x.style.setProperty('--c', val));
+      }
+    }
+  }
+  if (palPath === path) paintPal();
+  queueSave();
+}
+
+document.addEventListener('focusout', e => {
+  if (e.target.closest('[data-num]')){ render(); queueSave(); }
+}, true);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.closest('[data-bind]:not([data-html]):not([data-multi])')){
+    e.preventDefault(); e.target.blur();
+  }
+});
+
+function blank(kind){
+  if (kind === 'day')   return {id:uid('d'), time:'', name:t.newDay, note:'', dur:60, color:'#8E8E93'};
+  if (kind === 'week')  return {id:uid('w'), label:t.newWeek, sub:'', color:'#8E8E93', cells:state.week.days.map(() => '')};
+  if (kind === 'cards') return {id:uid('c'), eyebrow:t.newCardEye, title:t.newCard, color:'#8E8E93', items:[t.newItem]};
+  if (kind === 'strip') return {id:uid('p'), label:t.newStrip, kind:'line', text:''};
+  if (kind === 'stats') return {id:uid('s'), value:'', label:''};
+  if (kind === 'notes') return {id:uid('n'), label:t.newNote, color:'#9AA0A6', text:''};
+  return null;
+}
+const listOf = k => k === 'week' ? state.week.rows : state[k];
+
+app.addEventListener('click', e => {
+  const a = e.target.closest('[data-add]');
+  if (a){
+    const k = a.dataset.add;
+    const map = {day:'day', week:'week', card:'cards', strip:'strip', stat:'stats', note:'notes'};
+    if (map[k]) listOf(map[k]).push(blank(map[k]));
+    if (k === 'item'){
+      const c = state.cards.find(x => x.id === a.dataset.id);
+      if (c) c.items.push(t.newItem);
+    }
+    render(); queueSave(); return;
+  }
+  const n = e.target.closest('[data-ins]');
+  if (n){
+    const k = n.dataset.ins, list = listOf(k);
+    const at = list.findIndex(x => x.id === n.dataset.id);
+    list.splice(at < 0 ? list.length : at + 1, 0, blank(k));
+    render(); queueSave(); return;
+  }
+  const d = e.target.closest('[data-del]');
+  if (d){
+    const k = d.dataset.del, id = d.dataset.id;
+    const dmap = {day:'day', week:'week', cards:'cards', strip:'strip', stat:'stats', notes:'notes'};
+    if (dmap[k]){
+      const list = listOf(dmap[k]);
+      const at = list.findIndex(x => x.id === id);
+      if (at >= 0) list.splice(at, 1);
+    }
+    if (k === 'item'){
+      const c = state.cards.find(x => x.id === id);
+      if (c) c.items.splice(+d.dataset.j, 1);
+    }
+    render(); queueSave();
+  }
+});
+app.addEventListener('mouseover', e => {
+  const li = e.target.closest('.card li');
+  if (li && mode === 'edit'){ const b = li.querySelector('[data-del="item"]'); if (b) b.style.display = 'grid'; }
+});
+app.addEventListener('mouseout', e => {
+  const li = e.target.closest('.card li');
+  if (li){ const b = li.querySelector('[data-del="item"]'); if (b) b.style.display = 'none'; }
+});
+
+/* ═══════════ 7. 颜色 ═══════════ */
+let palPath = null;
+function paintPal(){
+  const cur = (palPath ? (readPath(palPath) || '') : '').toLowerCase();
+  $('#palGrid').innerHTML = PRESETS.map((hex,i) =>
+    `<button style="background:${hex}" data-hex="${hex}" title="${esc(t.colors[i])}" aria-label="${esc(t.colors[i])}"`
+    + `${hex.toLowerCase() === cur ? ' aria-current="true"' : ''}></button>`).join('');
+  $('#palNow').textContent = cur.toUpperCase();
+}
+function openPal(btn, path){
+  palPath = path; paintPal(); pal.hidden = false;
+  const r = btn.getBoundingClientRect(), w = pal.offsetWidth, h = pal.offsetHeight;
+  let left = Math.max(10, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 10));
+  let top = r.bottom + 9;
+  if (top + h > innerHeight - 10) top = Math.max(10, r.top - h - 9);
+  pal.style.left = left + 'px'; pal.style.top = top + 'px';
+}
+const closePal = () => { pal.hidden = true; palPath = null; };
+app.addEventListener('click', e => {
+  const b = e.target.closest('[data-pal]');
+  if (!b) return;
+  e.preventDefault();
+  if (!pal.hidden && palPath === b.dataset.pal) return closePal();
+  openPal(b, b.dataset.pal);
+});
+pal.addEventListener('click', e => {
+  const sw = e.target.closest('[data-hex]');
+  if (sw && palPath) return applyColor(palPath, sw.dataset.hex);
+  if (e.target.closest('#palCustom') && palPath){
+    const inp = app.querySelector('[data-sw="' + palPath + '"] input[type=color]');
+    closePal();
+    if (inp){ inp.style.pointerEvents = 'auto'; inp.click(); inp.style.pointerEvents = 'none'; }
+  }
+});
+document.addEventListener('pointerdown', e => {
+  if (pal.hidden || e.target.closest('#pal') || e.target.closest('[data-pal]')) return;
+  closePal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  closePal(); closePlans(); closeRen();
+  shBackup.classList.remove('on');
+  shAsk.classList.remove('on');
+});
+addEventListener('resize', closePal);
+document.addEventListener('scroll', () => { if (!pal.hidden) closePal(); }, true);
+
+/* ═══════════ 8. 拖拽 ═══════════ */
+let drag = null;
+function wireSort(){
+  app.querySelectorAll('[data-grip]').forEach(g => {
+    g.addEventListener('pointerdown', () => {
+      const item = g.closest('[data-sort]');
+      if (item) item.setAttribute('draggable','true');
+    });
+  });
+  app.querySelectorAll('[data-sort]').forEach(item => {
+    item.addEventListener('dragstart', ev => {
+      drag = {key:item.dataset.sort, id:item.dataset.id};
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/plain', item.dataset.id);
+      try { ev.dataTransfer.setDragImage(item, 24, 20); } catch(e){}
+      requestAnimationFrame(() => item.classList.add('dragging'));
+    });
+    item.addEventListener('dragend', () => {
+      item.removeAttribute('draggable');
+      item.classList.remove('dragging');
+      app.querySelectorAll('.drop-mark').forEach(x => x.classList.remove('drop-mark'));
+      drag = null;
+    });
+    item.addEventListener('dragover', ev => {
+      if (!drag || item.dataset.sort !== drag.key) return;
+      ev.preventDefault();
+      app.querySelectorAll('.drop-mark').forEach(x => x.classList.remove('drop-mark'));
+      if (item.dataset.id !== drag.id) item.classList.add('drop-mark');
+    });
+    item.addEventListener('drop', ev => {
+      if (!drag || item.dataset.sort !== drag.key) return;
+      ev.preventDefault();
+      const list = listOf(drag.key);
+      const from = list.findIndex(x => x.id === drag.id);
+      if (from < 0 || list.findIndex(x => x.id === item.dataset.id) < 0) return;
+      const horiz = drag.key !== 'week';
+      const r = item.getBoundingClientRect();
+      const after = horiz ? (ev.clientX > r.left + r.width / 2) : (ev.clientY > r.top + r.height / 2);
+      const [moved] = list.splice(from, 1);
+      const to = list.findIndex(x => x.id === item.dataset.id);
+      list.splice(after ? to + 1 : to, 0, moved);
+      render(); queueSave();
+    });
+  });
+}
+
+/* ═══════════ 9. 模式 / 工具条 ═══════════ */
+function applyMode(){
+  document.body.classList.toggle('edit', mode === 'edit');
+  $('#mEdit').setAttribute('aria-pressed', mode === 'edit');
+  $('#mView').setAttribute('aria-pressed', mode === 'view');
+  app.querySelectorAll('[contenteditable]').forEach(el => {
+    el.setAttribute('contenteditable', mode === 'edit' ? (el.dataset.html ? 'true' : 'plaintext-only') : 'false');
+  });
+}
+const setMode = m => { mode = m; applyMode(); };
+$('#mEdit').onclick = () => setMode('edit');
+$('#mView').onclick = () => setMode('view');
+$('#bPrint').onclick = () => { setMode('view'); setTimeout(() => print(), 140); };
+
+/* 备份 / 恢复 */
+const shBackup = $('#shBackup'), bkArea = $('#bkArea');
+$('#bBackup').onclick = () => {
+  bkArea.value = JSON.stringify(state);
+  shBackup.classList.add('on');
+  $('#bkCopy').textContent = t.bkCopy;
+};
+$('#bkClose').onclick = () => shBackup.classList.remove('on');
+shBackup.addEventListener('click', e => { if (e.target === shBackup) shBackup.classList.remove('on'); });
+$('#bkCopy').onclick = () => {
+  bkArea.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e){}
+  if (!ok && navigator.clipboard) navigator.clipboard.writeText(bkArea.value).catch(() => {});
+  $('#bkCopy').textContent = t.bkCopied;
+};
+$('#bkImport').onclick = () => {
+  let o = null;
+  try { o = JSON.parse(bkArea.value); } catch(e){}
+  if (!okState(o)){ ask(t.bkT, t.bkBad, null); return; }
+  addPlan((o.title || '').trim() || t.importName, o);
+  render(); paintPlanName(); shBackup.classList.remove('on');
+  statusEl.textContent = t.saved;
+};
+
+/* 确认弹层：onYes 传 null 时只是一条提示 */
+const shAsk = $('#shAsk');
+let askYes = null;
+function ask(title, body, onYes, yesLabel){
+  $('#askT').textContent = title;
+  $('#askD').textContent = body;
+  askYes = onYes;
+  $('#askNo').textContent = onYes ? t.cancel : t.bkClose;
+  $('#askYes').textContent = yesLabel || t.ok;
+  $('#askYes').hidden = !onYes;
+  shAsk.classList.add('on');
+}
+const closeAsk = () => { shAsk.classList.remove('on'); askYes = null; };
+$('#askNo').onclick = closeAsk;
+$('#askYes').onclick = () => { const f = askYes; closeAsk(); if (f) f(); };
+shAsk.addEventListener('click', e => { if (e.target === shAsk) closeAsk(); });
+
+/* 计划切换器 */
+const plansPop = $('#plansPop');
+function paintPlanName(){
+  const p = curPlan();
+  $('#planName').textContent = p ? p.name : t.plans;
+  $('#bBack').hidden = !p;
+}
+function paintPlans(){
+  const sorted = lib.plans.slice().sort((a,b) => b.updated - a.updated);
+  $('#plansList').innerHTML = sorted.map(p => `
+    <button data-open="${p.id}"${p.id === lib.current ? ' aria-current="true"' : ''}>
+      <span class="pk">${p.id === lib.current ? '✓' : ''}</span>
+      <span class="pn">${esc(p.name)}</span>
+      <span class="pd">${esc(stamp(p.updated))}</span>
+    </button>`).join('');
+  $('#plDel').disabled = !lib.plans.length;
+  $('#plDup').disabled = !curPlan();
+  $('#plRen').disabled = !curPlan();
+}
+function openPlans(){
+  paintPlans(); plansPop.hidden = false;
+  const r = $('#bPlans').getBoundingClientRect(), w = plansPop.offsetWidth;
+  plansPop.style.left = Math.max(10, Math.min(r.right - w, innerWidth - w - 10)) + 'px';
+  plansPop.style.top = (r.bottom + 8) + 'px';
+}
+const closePlans = () => { plansPop.hidden = true; };
+$('#bPlans').onclick = () => plansPop.hidden ? openPlans() : closePlans();
+document.addEventListener('pointerdown', e => {
+  if (plansPop.hidden || e.target.closest('#plansPop') || e.target.closest('#bPlans')) return;
+  closePlans();
+});
+plansPop.addEventListener('click', e => {
+  const o = e.target.closest('[data-open]');
+  if (o){ closePlans(); openPlan(o.dataset.open); return; }
+  if (e.target.closest('#plNew')){ closePlans(); showChooser('new'); return; }
+  if (e.target.closest('#plDup')){
+    const p = curPlan(); if (!p) return;
+    closePlans();
+    addPlan(p.name + ' · ' + t.copySuffix, JSON.parse(JSON.stringify(p.state)));
+    render(); paintPlanName(); return;
+  }
+  if (e.target.closest('#plRen')){
+    const p = curPlan(); if (!p) return;
+    closePlans();
+    $('#renInput').value = p.name;
+    $('#shRen').classList.add('on');
+    setTimeout(() => { $('#renInput').focus(); $('#renInput').select(); }, 40);
+    return;
+  }
+  if (e.target.closest('#plDel')){
+    const p = curPlan(); if (!p) return;
+    closePlans();
+    ask(t.delT, t.delD, () => {
+      lib.plans = lib.plans.filter(x => x.id !== p.id);
+      const next = lib.plans.slice().sort((a,b) => b.updated - a.updated)[0];
+      if (next){ openPlan(next.id); }
+      else {
+        lib.current = null; state = null; saveLib();
+        app.innerHTML = ''; paintPlanName();
+        showChooser('new');
+      }
+    }, t.del);
+  }
+});
+
+/* 重命名 */
+const shRen = $('#shRen');
+const closeRen = () => shRen.classList.remove('on');
+$('#renNo').onclick = closeRen;
+shRen.addEventListener('click', e => { if (e.target === shRen) closeRen(); });
+function doRename(){
+  const p = curPlan(), v = $('#renInput').value.trim();
+  if (p && v){ p.name = v; p.updated = Date.now(); saveLib(); paintPlanName(); }
+  closeRen();
+}
+$('#renYes').onclick = doRename;
+$('#renInput').addEventListener('keydown', e => { if (e.key === 'Enter') doRename(); });
+
+/* 选择页两种进入方式
+   · 我的计划 → 新建计划：选一个 = 新增一份，之前的原样保留
+   · 导航栏 ‹ 上一步：选一个 = 替换当前这份（没改过就直接换，改过先确认） */
+let pickMode = 'new';
+function showChooser(mode){
+  pickMode = mode;
+  const has = !!lib.plans.length;
+  $('#stSub').textContent = mode === 'replace' ? t.stSubRe : (has ? t.stSubMore : t.stSub);
+  $('#stBack').hidden = !has;
+  startEl.classList.add('on'); scrollTo(0,0);
+}
+$('#bBack').onclick = () => { if (curPlan()) showChooser('replace'); };
+$('#stBack').onclick = () => { if (curPlan()) startEl.classList.remove('on'); };
+$('#picks').addEventListener('click', e => {
+  const b = e.target.closest('[data-pick]');
+  if (!b) return;
+  const k = b.dataset.pick;
+  const st = k === 'demo' ? demoState(lang) : k === 'min' ? minState(lang) : blankState(lang);
+  const name = (k === 'demo' ? st.title : k === 'min' ? t.pMinT : t.pBlankT) + ' · ' + stamp(Date.now());
+  const finish = () => {
+    startEl.classList.remove('on');
+    render(); paintPlanName();
+    statusEl.textContent = t.saved;
+    scrollTo(0,0);
+  };
+  const cur = curPlan();
+  if (pickMode === 'replace' && cur){
+    const doReplace = () => {
+      cur.state = st; cur.name = name; cur.touched = false; cur.updated = Date.now();
+      state = st; saveLib(); finish();
+    };
+    if (cur.touched) ask(t.reT, t.reD, doReplace, t.replace); else doReplace();
+    return;
+  }
+  addPlan(name, st); finish();
+});
+
+/* ═══════════ 10. 启动 ═══════════ */
+lib = loadLib();
+paintChrome();
+const cur = curPlan();
+if (cur){
+  state = cur.state;
+  render(); paintPlanName();
+  statusEl.textContent = t.saved;
+} else {
+  showChooser('new');
+}
+</script>
+</body>
+</html>
