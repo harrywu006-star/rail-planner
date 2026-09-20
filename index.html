@@ -277,6 +277,58 @@ textarea.bk{
   color:var(--ink); resize:vertical; margin-bottom:14px;
 }
 
+/* assistant drawer */
+.scrim{position:fixed; inset:0; z-index:108; background:rgba(0,0,0,.28); backdrop-filter:blur(2px); display:none}
+.scrim.on{display:block}
+.drawer{
+  position:fixed; top:0; right:0; bottom:0; z-index:110; width:min(460px,100vw);
+  background:var(--surface); box-shadow:-12px 0 40px -20px rgba(0,0,0,.35);
+  transform:translateX(102%); transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  overflow:auto; padding:20px 22px calc(28px + env(safe-area-inset-bottom,0px));
+  display:flex; flex-direction:column; gap:18px;
+}
+.drawer.on{transform:none}
+.dr-head{display:flex; align-items:center; gap:10px}
+.dr-head h3{margin:0; font-size:20px; font-weight:600; letter-spacing:-.02em; flex:1}
+.dr-note{font-size:12.5px; color:var(--muted); line-height:1.5; margin:0}
+.dr-box{background:var(--surface2); border:1px solid var(--hair2); border-radius:14px; padding:14px 15px; display:flex; flex-direction:column; gap:10px}
+.dr-box .lb{font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:.04em}
+.dr-box textarea{
+  width:100%; min-height:118px; border:1px solid var(--hair); border-radius:12px; padding:11px 12px; font:inherit; font-size:14px;
+  line-height:1.5; background:var(--surface); color:var(--ink); resize:vertical; outline:none;
+}
+.dr-box textarea:focus, .dr-box input.txt:focus{border-color:var(--blue); box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 18%,transparent)}
+.dr-box input.txt{margin:0}
+.dr-box select{font:inherit; font-size:13px; padding:8px 10px; border-radius:10px; border:1px solid var(--hair); background:var(--surface); color:var(--ink); max-width:100%}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; padding:5px 10px; border-radius:980px; background:var(--surface); border:1px solid var(--hair); cursor:pointer; user-select:none}
+.chip input{margin:0; accent-color:var(--blue)}
+.chip.on{border-color:var(--blue); color:var(--blue); background:color-mix(in srgb,var(--blue) 8%,var(--surface))}
+.radios{display:flex; gap:12px; flex-wrap:wrap; font-size:13px}
+.radios label{display:inline-flex; align-items:center; gap:6px; cursor:pointer}
+.radios input{accent-color:var(--blue); margin:0}
+.dr-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.conn{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500}
+.conn .dot{width:8px; height:8px; border-radius:50%; background:#ff9f0a; flex:none}
+.conn.ok .dot{background:#30d158}
+.conn .sub{font-weight:400; color:var(--muted); font-size:12px}
+.dr-out{
+  border-radius:12px; background:var(--sunken); padding:11px 12px; font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--muted); max-height:150px; overflow:auto; white-space:pre-wrap; word-break:break-all; display:none;
+}
+.dr-out.on{display:block}
+.dr-status{font-size:13px; color:var(--ink2); display:flex; align-items:center; gap:8px; min-height:20px}
+.spin{width:14px; height:14px; border:2px solid var(--hair); border-top-color:var(--blue); border-radius:50%; animation:sp .8s linear infinite; flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.dr-sum{display:flex; flex-wrap:wrap; gap:6px}
+.dr-sum span{font-size:12.5px; padding:4px 10px; border-radius:980px; background:color-mix(in srgb,var(--blue) 10%,var(--surface)); color:var(--blue); font-weight:500}
+.dr-err{color:#ff3b30; font-size:13px; line-height:1.45}
+.dr-foot{margin-top:auto; font-size:12px; color:var(--faint); line-height:1.5}
+a.lnk{color:var(--blue); text-decoration:none; font-size:12.5px}
+a.lnk:hover{text-decoration:underline}
+.pick.ai{background:linear-gradient(135deg,color-mix(in srgb,var(--blue) 10%,var(--surface)),var(--surface))}
+.pick.ai b::before{content:"✦ "; color:var(--blue)}
+
 /* first-run chooser */
 .start{position:fixed; inset:0; z-index:100; background:var(--bg); overflow:auto; display:none}
 .start.on{display:block}
@@ -307,7 +359,7 @@ textarea.bk{
 @media print{
   @page{margin:10mm}
   body{background:#fff; font-size:11px}
-  .nav,.tools,.adder,.addrow,.hint,.sheet,.status,.pal,.boardbar,.start{display:none!important}
+  .nav,.tools,.adder,.addrow,.hint,.sheet,.status,.pal,.boardbar,.start,.drawer,.scrim{display:none!important}
   .page{max-width:none; padding:0}
   .hero{padding:0 0 18px; text-align:left}
   .board{box-shadow:none; padding:0}
@@ -332,6 +384,7 @@ textarea.bk{
     </div>
     <button class="btn" id="bPrint"></button>
     <button class="btn" id="bBackup"></button>
+    <button class="btn pri" id="bAI"></button>
     <button class="btn plan" id="bPlans"><span id="planName"></span><span class="chev">⌄</span></button>
     <select class="lang" id="langSel" aria-label="Language">
       <option value="zh-Hans">简体中文</option>
@@ -399,6 +452,62 @@ textarea.bk{
   </div>
 </div>
 
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="assistant">
+  <div class="dr-head">
+    <h3 id="aiT"></h3>
+    <button class="ic" id="aiClose" style="width:28px;height:28px;font-size:14px" aria-label="close">✕</button>
+  </div>
+  <p class="dr-note" id="aiOnly"></p>
+
+  <div class="dr-box" id="aiConn">
+    <div class="conn" id="aiConnLine"><span class="dot"></span><span id="aiConnTxt"></span><span class="sub" id="aiConnSub"></span></div>
+    <div id="aiBindForm">
+      <p class="dr-note" id="aiBindHow" style="margin-bottom:10px"></p>
+      <input class="txt" id="aiKey" type="password" autocomplete="off" spellcheck="false">
+      <div class="dr-row" style="margin-top:8px">
+        <button class="btn pri" id="aiBindBtn"></button>
+        <a class="lnk" id="aiGetKey" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener"></a>
+      </div>
+      <div class="dr-err" id="aiBindErr" style="margin-top:8px"></div>
+    </div>
+    <div id="aiBound" hidden>
+      <div class="dr-row">
+        <label class="lb" for="aiModelSel" id="aiModelLb"></label>
+        <select id="aiModelSel"></select>
+        <button class="btn ghost" id="aiUnbind" style="margin-left:auto"></button>
+      </div>
+      <p class="dr-note" id="aiCost" style="margin:6px 0 0"></p>
+    </div>
+  </div>
+
+  <div class="dr-box">
+    <span class="lb" id="aiReqLb"></span>
+    <textarea id="aiReq"></textarea>
+    <span class="lb" id="aiScopeLb"></span>
+    <div class="chips" id="aiScope"></div>
+    <span class="lb" id="aiTargetLb"></span>
+    <div class="radios">
+      <label><input type="radio" name="aiTarget" value="new" checked><span id="aiNewLb"></span></label>
+      <label><input type="radio" name="aiTarget" value="replace"><span id="aiRepLb"></span></label>
+    </div>
+    <div class="dr-row" style="margin-top:4px">
+      <button class="btn pri" id="aiGo"></button>
+      <button class="btn" id="aiStopBtn" hidden></button>
+    </div>
+    <div class="dr-status" id="aiStatus"></div>
+    <div class="dr-out" id="aiOut"></div>
+    <div class="dr-sum" id="aiSum"></div>
+    <div class="dr-row" id="aiApplyRow" hidden>
+      <button class="btn pri" id="aiApply"></button>
+      <button class="btn" id="aiDiscard"></button>
+    </div>
+    <div class="dr-err" id="aiErr"></div>
+  </div>
+
+  <p class="dr-foot" id="aiSent"></p>
+</aside>
+
 <div class="start" id="start">
   <div class="start-in">
     <button class="btn ghost stback" id="stBack" hidden></button>
@@ -451,6 +560,20 @@ const UI = {
  untitled:'未命名计划', copySuffix:'副本', importName:'导入的计划',
  prev:'上一步：重新选择起点', stSubRe:'重新选一个起点。这份计划的内容会被替换，其他计划不受影响。',
  reT:'替换这份计划的内容？', reD:'你在这份里已经改过东西，重选模板会把它们清掉。想两份都留着的话，用顶部「我的计划 → 新建计划」。', replace:'替换',
+ ai:'✦ 助手', aiTitle:'规划助手', aiOnly:'这个助手只做一件事：按你的需求排一日轨道、一周分配，写运行规则。其他任何请求它都会拒绝。',
+ aiPickT:'让助手帮我排', aiPickD:'用一段话说清你的情况和目标，Claude 直接排出一整份 —— 时间、一周分配、运行规则全有。',
+ aiNotBound:'还没绑定 Claude', aiBindHow:'公开网页没法直接登录 Claude 账号，所以这里用 Anthropic 的 API 密钥来绑定。密钥只存在这台设备的浏览器里，只发给 Anthropic，不经过任何第三方。',
+ aiKeyPh:'粘贴 API 密钥（sk-ant-…）', aiGetKey:'去 console.anthropic.com 获取密钥 →', aiBind:'绑定', aiChecking:'正在验证密钥…', aiBadKey:'绑定失败：', aiModel:'模型',
+ aiViaKey:'已绑定 · API 密钥', aiViaClaude:'已绑定 · 通过你的 Claude 账号', aiUnbind:'解绑',
+ aiCost:'每次生成按 Anthropic 用量计费，一整份计划通常只要几美分。',
+ aiReqLabel:'你的需求', aiReqPh:'例：我每天能学 6 小时，数学最重要，早上状态最好；周二周四下午有课；每周健身 3 次；晚上要给女朋友打电话；周日想休息……',
+ aiScope:'让它排哪些部分', aiTarget:'结果放到', aiNewPlan:'新建一份计划', aiReplaceCur:'替换当前这份',
+ aiGo:'生成计划', aiStop:'停止', aiThinking:'Claude 正在思考…', aiWriting:'正在写', aiDone:'排好了。看一眼摘要，再决定应用还是丢弃。',
+ aiApply:'应用', aiDiscard:'丢弃', aiRefused:'助手拒绝了这个请求：', aiErr:'出错了：', aiTruncated:'输出被截断了 —— 缩小范围或把需求说得更简短再试。',
+ aiNoJson:'返回的内容不是一份合法的计划，请再试一次。', aiNeedReq:'先写一句需求。', aiNeedScope:'至少勾一个部分。',
+ aiSent:'发给 Claude 的只有：你写的需求 + 当前这份计划的文字。', aiPlanName:'助手排的计划', aiApplied:'已应用。',
+ scopeDay:'一日轨道', scopeWeek:'一周分配', scopeRules:'运行规则', scopeCard:'每日卡片', scopeNotes:'备注', scopeHead:'标题与数字',
+ unitBlocks:'段', unitRows:'条轨道', unitCards:'张卡', unitCells:'格', unitNotes:'块备注',
  phAny:'输入…', phStatV:'0', phStatL:'说明',
  newDay:'新的一段', newWeek:'新轨道', newCardEye:'新分类', newCard:'新规则', newStrip:'新格子', newNote:'新备注', newItem:'写一条',
  days:['周一','周二','周三','周四','周五','周六','周日'],
@@ -485,6 +608,20 @@ const UI = {
  untitled:'未命名計畫', copySuffix:'副本', importName:'匯入的計畫',
  prev:'上一步：重新選擇起點', stSubRe:'重新選一個起點。這份計畫的內容會被替換，其他計畫不受影響。',
  reT:'替換這份計畫的內容？', reD:'你在這份裡已經改過東西，重選範本會把它們清掉。想兩份都留著的話，用頂部「我的計畫 → 新建計畫」。', replace:'替換',
+ ai:'✦ 助手', aiTitle:'規劃助手', aiOnly:'這個助手只做一件事：按你的需求排一日軌道、一週分配，寫運行規則。其他任何請求它都會拒絕。',
+ aiPickT:'讓助手幫我排', aiPickD:'用一段話說清你的情況和目標，Claude 直接排出一整份 —— 時間、一週分配、運行規則全有。',
+ aiNotBound:'還沒綁定 Claude', aiBindHow:'公開網頁沒辦法直接登入 Claude 帳號，所以這裡用 Anthropic 的 API 金鑰來綁定。金鑰只存在這台裝置的瀏覽器裡，只送給 Anthropic，不經過任何第三方。',
+ aiKeyPh:'貼上 API 金鑰（sk-ant-…）', aiGetKey:'到 console.anthropic.com 取得金鑰 →', aiBind:'綁定', aiChecking:'正在驗證金鑰…', aiBadKey:'綁定失敗：', aiModel:'模型',
+ aiViaKey:'已綁定 · API 金鑰', aiViaClaude:'已綁定 · 透過你的 Claude 帳號', aiUnbind:'解除綁定',
+ aiCost:'每次生成按 Anthropic 用量計費，一整份計畫通常只要幾美分。',
+ aiReqLabel:'你的需求', aiReqPh:'例：我每天能讀 6 小時，數學最重要，早上狀態最好；週二週四下午有課；每週健身 3 次；晚上要跟女朋友通話；週日想休息……',
+ aiScope:'讓它排哪些部分', aiTarget:'結果放到', aiNewPlan:'新建一份計畫', aiReplaceCur:'替換目前這份',
+ aiGo:'生成計畫', aiStop:'停止', aiThinking:'Claude 正在思考…', aiWriting:'正在寫', aiDone:'排好了。看一眼摘要，再決定套用還是丟棄。',
+ aiApply:'套用', aiDiscard:'丟棄', aiRefused:'助手拒絕了這個請求：', aiErr:'出錯了：', aiTruncated:'輸出被截斷了 —— 縮小範圍或把需求說得更簡短再試。',
+ aiNoJson:'回傳的內容不是一份合法的計畫，請再試一次。', aiNeedReq:'先寫一句需求。', aiNeedScope:'至少勾一個部分。',
+ aiSent:'送給 Claude 的只有：你寫的需求 + 目前這份計畫的文字。', aiPlanName:'助手排的計畫', aiApplied:'已套用。',
+ scopeDay:'一日軌道', scopeWeek:'一週分配', scopeRules:'運行規則', scopeCard:'每日卡片', scopeNotes:'備註', scopeHead:'標題與數字',
+ unitBlocks:'段', unitRows:'條軌道', unitCards:'張卡', unitCells:'格', unitNotes:'塊備註',
  phAny:'輸入…', phStatV:'0', phStatL:'說明',
  newDay:'新的一段', newWeek:'新軌道', newCardEye:'新分類', newCard:'新規則', newStrip:'新格子', newNote:'新備註', newItem:'寫一條',
  days:['週一','週二','週三','週四','週五','週六','週日'],
@@ -519,6 +656,20 @@ const UI = {
  untitled:'Untitled plan', copySuffix:'copy', importName:'Imported plan',
  prev:'Back: pick a different start', stSubRe:'Pick a different starting point. This plan\u2019s content will be replaced; your other plans are untouched.',
  reT:'Replace this plan\u2019s content?', reD:'You have already edited this plan; choosing a template again clears those edits. To keep both, use “My plans → New plan” at the top instead.', replace:'Replace',
+ ai:'✦ Assistant', aiTitle:'Planning assistant', aiOnly:'This assistant does exactly one thing: it lays out your day rail, your week grid and your house rules from what you tell it. Any other request is refused.',
+ aiPickT:'Let the assistant plan it', aiPickD:'Describe your situation and goals in a paragraph and Claude lays out the whole thing — times, week grid, house rules.',
+ aiNotBound:'Claude is not connected yet', aiBindHow:'A public web page cannot sign in to a Claude account, so this page connects with an Anthropic API key. The key stays in this browser on this device and is sent only to Anthropic, never through a third party.',
+ aiKeyPh:'Paste your API key (sk-ant-…)', aiGetKey:'Get a key at console.anthropic.com →', aiBind:'Connect', aiChecking:'Checking the key…', aiBadKey:'Could not connect: ', aiModel:'Model',
+ aiViaKey:'Connected · API key', aiViaClaude:'Connected · through your Claude account', aiUnbind:'Disconnect',
+ aiCost:'Each run is billed against your Anthropic usage; a full plan usually costs a few cents.',
+ aiReqLabel:'What you need', aiReqPh:'e.g. I can study 6 hours a day, maths matters most and mornings are my best time; lectures Tue and Thu afternoons; gym three times a week; a call with my girlfriend in the evening; Sundays off…',
+ aiScope:'Which parts to plan', aiTarget:'Put the result in', aiNewPlan:'A new plan', aiReplaceCur:'Replace the current plan',
+ aiGo:'Generate plan', aiStop:'Stop', aiThinking:'Claude is thinking…', aiWriting:'Writing', aiDone:'Done. Check the summary, then apply or discard.',
+ aiApply:'Apply', aiDiscard:'Discard', aiRefused:'The assistant refused this request: ', aiErr:'Something went wrong: ', aiTruncated:'The output was cut short — narrow the scope or shorten the request and try again.',
+ aiNoJson:'The reply was not a valid plan. Please try again.', aiNeedReq:'Write a sentence about what you need first.', aiNeedScope:'Tick at least one part.',
+ aiSent:'Only two things are sent to Claude: your request and the text of the current plan.', aiPlanName:'Plan by the assistant', aiApplied:'Applied.',
+ scopeDay:'Day rail', scopeWeek:'Week grid', scopeRules:'House rules', scopeCard:'Daily card', scopeNotes:'Notes', scopeHead:'Title & figures',
+ unitBlocks:'blocks', unitRows:'rails', unitCards:'cards', unitCells:'slots', unitNotes:'notes',
  phAny:'Type…', phStatV:'0', phStatL:'Caption',
  newDay:'New block', newWeek:'New rail', newCardEye:'New category', newCard:'New rule', newStrip:'New slot', newNote:'New note', newItem:'Write a line',
  days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
@@ -553,6 +704,20 @@ const UI = {
  untitled:'Unbenannter Plan', copySuffix:'Kopie', importName:'Importierter Plan',
  prev:'Zurück: anderen Anfang wählen', stSubRe:'Wähle einen anderen Anfang. Der Inhalt dieses Plans wird ersetzt; deine anderen Pläne bleiben unberührt.',
  reT:'Inhalt dieses Plans ersetzen?', reD:'Du hast diesen Plan schon bearbeitet; eine neue Vorlage löscht diese Änderungen. Um beide zu behalten, nimm oben „Meine Pläne → Neuer Plan“.', replace:'Ersetzen',
+ ai:'✦ Assistent', aiTitle:'Planungsassistent', aiOnly:'Dieser Assistent macht genau eines: Er baut aus deinen Angaben die Tagesstrecke, das Wochenraster und die Betriebsregeln. Jede andere Anfrage lehnt er ab.',
+ aiPickT:'Den Assistenten planen lassen', aiPickD:'Beschreibe deine Situation und Ziele in ein paar Sätzen, und Claude legt alles an — Zeiten, Wochenraster, Betriebsregeln.',
+ aiNotBound:'Claude ist noch nicht verbunden', aiBindHow:'Eine öffentliche Webseite kann sich nicht in ein Claude-Konto einloggen, deshalb verbindet sich diese Seite über einen Anthropic-API-Schlüssel. Der Schlüssel bleibt in diesem Browser auf diesem Gerät und geht nur an Anthropic, nie über Dritte.',
+ aiKeyPh:'API-Schlüssel einfügen (sk-ant-…)', aiGetKey:'Schlüssel bei console.anthropic.com holen →', aiBind:'Verbinden', aiChecking:'Schlüssel wird geprüft…', aiBadKey:'Verbindung fehlgeschlagen: ', aiModel:'Modell',
+ aiViaKey:'Verbunden · API-Schlüssel', aiViaClaude:'Verbunden · über dein Claude-Konto', aiUnbind:'Trennen',
+ aiCost:'Jeder Lauf wird über dein Anthropic-Guthaben abgerechnet; ein kompletter Plan kostet meist ein paar Cent.',
+ aiReqLabel:'Was du brauchst', aiReqPh:'z. B. Ich kann 6 Stunden am Tag lernen, Mathe ist am wichtigsten, morgens bin ich am besten; Di und Do nachmittags Vorlesung; dreimal pro Woche Sport; abends Telefonat mit meiner Freundin; Sonntag frei …',
+ aiScope:'Welche Teile planen', aiTarget:'Ergebnis ablegen in', aiNewPlan:'Einem neuen Plan', aiReplaceCur:'Dem aktuellen Plan (ersetzen)',
+ aiGo:'Plan erzeugen', aiStop:'Stopp', aiThinking:'Claude denkt nach …', aiWriting:'Schreibt', aiDone:'Fertig. Prüfe die Zusammenfassung, dann übernehmen oder verwerfen.',
+ aiApply:'Übernehmen', aiDiscard:'Verwerfen', aiRefused:'Der Assistent hat diese Anfrage abgelehnt: ', aiErr:'Etwas ist schiefgelaufen: ', aiTruncated:'Die Ausgabe wurde abgeschnitten — Umfang verkleinern oder kürzer formulieren und noch einmal versuchen.',
+ aiNoJson:'Die Antwort war kein gültiger Plan. Bitte noch einmal versuchen.', aiNeedReq:'Schreib zuerst einen Satz dazu, was du brauchst.', aiNeedScope:'Mindestens einen Teil ankreuzen.',
+ aiSent:'An Claude gehen nur zwei Dinge: deine Anfrage und der Text des aktuellen Plans.', aiPlanName:'Plan vom Assistenten', aiApplied:'Übernommen.',
+ scopeDay:'Tagesstrecke', scopeWeek:'Wochenraster', scopeRules:'Betriebsregeln', scopeCard:'Tageskarte', scopeNotes:'Notizen', scopeHead:'Titel & Kennzahlen',
+ unitBlocks:'Abschnitte', unitRows:'Zeilen', unitCards:'Karten', unitCells:'Felder', unitNotes:'Notizen',
  phAny:'Eingeben…', phStatV:'0', phStatL:'Bezeichnung',
  newDay:'Neuer Abschnitt', newWeek:'Neue Zeile', newCardEye:'Neue Kategorie', newCard:'Neue Regel', newStrip:'Neues Feld', newNote:'Neue Notiz', newItem:'Zeile schreiben',
  days:['Mo','Di','Mi','Do','Fr','Sa','So'],
@@ -1086,15 +1251,38 @@ function paintChrome(){
   $('#stSub').textContent = lib.plans.length ? t.stSubMore : t.stSub;
   $('#stBack').hidden = !lib.plans.length;
   $('#stFoot').textContent = t.stFoot;
+  $('#bAI').textContent = t.ai;
+  $('#aiT').textContent = t.aiTitle;
+  $('#aiOnly').textContent = t.aiOnly;
+  $('#aiBindHow').textContent = t.aiBindHow;
+  $('#aiKey').placeholder = t.aiKeyPh;
+  $('#aiBindBtn').textContent = t.aiBind;
+  $('#aiGetKey').textContent = t.aiGetKey;
+  $('#aiModelLb').textContent = t.aiModel;
+  $('#aiUnbind').textContent = t.aiUnbind;
+  $('#aiCost').textContent = t.aiCost;
+  $('#aiReqLb').textContent = t.aiReqLabel;
+  $('#aiReq').placeholder = t.aiReqPh;
+  $('#aiScopeLb').textContent = t.aiScope;
+  $('#aiTargetLb').textContent = t.aiTarget;
+  $('#aiNewLb').textContent = t.aiNewPlan;
+  $('#aiRepLb').textContent = t.aiReplaceCur;
+  $('#aiGo').textContent = t.aiGo;
+  $('#aiStopBtn').textContent = t.aiStop;
+  $('#aiApply').textContent = t.aiApply;
+  $('#aiDiscard').textContent = t.aiDiscard;
+  $('#aiSent').textContent = t.aiSent;
+  paintScope(); paintAIConn();
   $('#langSel').value = lang;
   $('#langSel2').value = lang;
   statusEl.textContent = state ? t.saved : '';
   $('#picks').innerHTML = [
     ['blank','#9AA0A6','pBlankT','pBlankD'],
     ['demo','#0071e3','pDemoT','pDemoD'],
-    ['min','#5E8C6A','pMinT','pMinD']
+    ['min','#5E8C6A','pMinT','pMinD'],
+    ['ai','#0071e3','aiPickT','aiPickD']
   ].map(([k,c,tk,dk]) => `
-    <button class="pick" data-pick="${k}" style="--pc:${c}">
+    <button class="pick${k === 'ai' ? ' ai' : ''}" data-pick="${k}" style="--pc:${c}">
       <span class="pi"></span>
       <b>${esc(t[tk])}</b>
       <span>${esc(t[dk])}</span>
@@ -1251,7 +1439,7 @@ document.addEventListener('pointerdown', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  closePal(); closePlans(); closeRen();
+  closePal(); closePlans(); closeRen(); closeAI();
   shBackup.classList.remove('on');
   shAsk.classList.remove('on');
 });
@@ -1455,6 +1643,7 @@ $('#picks').addEventListener('click', e => {
   const b = e.target.closest('[data-pick]');
   if (!b) return;
   const k = b.dataset.pick;
+  if (k === 'ai'){ openAI(pickMode === 'replace' && curPlan() ? 'replace' : 'new'); return; }
   const st = k === 'demo' ? demoState(lang) : k === 'min' ? minState(lang) : blankState(lang);
   const name = (k === 'demo' ? st.title : k === 'min' ? t.pMinT : t.pBlankT) + ' · ' + stamp(Date.now());
   const finish = () => {
@@ -1474,6 +1663,300 @@ $('#picks').addEventListener('click', e => {
   }
   addPlan(name, st); finish();
 });
+
+/* ═══════════ 11. 规划助手 ═══════════
+   两条后端，同一份逻辑：
+   · 在 claude.ai 的 artifact 里 → sample 能力，走观众自己的 Claude 账号，不需要密钥
+   · 在公开网页上           → Anthropic API 密钥，只存 localStorage，直接从浏览器调用
+   模型只能产出一份计划 JSON；页面只接受计划 JSON —— 它没有别的出口。 */
+const AIKEY = 'rail-planner-ai';
+const API = 'https://api.anthropic.com/v1';
+const APIVER = '2023-06-01';
+let ai = {key:'', model:'', models:[]};
+let sampleFn = null, aiCtl = null, aiDraft = null, aiScopeSel = {day:true, week:true, rules:true, card:false, notes:false, head:false};
+try { const o = JSON.parse(localStorage.getItem(AIKEY) || 'null'); if (o && o.key) ai = {key:o.key, model:o.model || '', models:o.models || []}; } catch(e){}
+
+const drawer = $('#drawer'), scrim = $('#scrim');
+const SCOPES = [['day','scopeDay'],['week','scopeWeek'],['rules','scopeRules'],['card','scopeCard'],['notes','scopeNotes'],['head','scopeHead']];
+
+function paintScope(){
+  $('#aiScope').innerHTML = SCOPES.map(([k,lk]) =>
+    `<label class="chip${aiScopeSel[k] ? ' on' : ''}"><input type="checkbox" data-scope="${k}"${aiScopeSel[k] ? ' checked' : ''}>${esc(t[lk])}</label>`).join('');
+}
+$('#aiScope').addEventListener('change', e => {
+  const c = e.target.closest('[data-scope]'); if (!c) return;
+  aiScopeSel[c.dataset.scope] = c.checked; c.closest('.chip').classList.toggle('on', c.checked);
+});
+
+function aiReady(){ return !!sampleFn || !!(ai.key && ai.model); }
+function paintAIConn(){
+  const line = $('#aiConnLine'), ok = aiReady();
+  line.classList.toggle('ok', ok);
+  $('#aiConnTxt').textContent = sampleFn ? t.aiViaClaude : ok ? t.aiViaKey : t.aiNotBound;
+  $('#aiConnSub').textContent = (!sampleFn && ok) ? '· ' + ai.model + ' · …' + ai.key.slice(-4) : '';
+  $('#aiBindForm').hidden = ok;
+  $('#aiBound').hidden = !ok || !!sampleFn;
+  $('#aiCost').hidden = !!sampleFn;
+  if (!sampleFn && ok){
+    const sel = $('#aiModelSel');
+    const list = ai.models.length ? ai.models : [{id:ai.model, name:ai.model}];
+    sel.innerHTML = list.map(m => `<option value="${esc(m.id)}"${m.id === ai.model ? ' selected' : ''}>${esc(m.name)}</option>`).join('');
+  }
+  $('#aiGo').disabled = !ok;
+}
+$('#aiModelSel').onchange = e => { ai.model = e.target.value; saveAI(); paintAIConn(); };
+function saveAI(){ try { localStorage.setItem(AIKEY, JSON.stringify(ai)); } catch(e){} }
+
+const apiHeaders = key => ({'content-type':'application/json', 'x-api-key':key, 'anthropic-version':APIVER, 'anthropic-dangerous-direct-browser-access':'true'});
+async function listModels(key){
+  const r = await fetch(API + '/models?limit=100', {headers:apiHeaders(key)});
+  if (!r.ok){ let m = ''; try { m = (await r.json()).error?.message || ''; } catch(e){} throw new Error(r.status + ' ' + m); }
+  const j = await r.json();
+  return (j.data || []).map(m => ({id:m.id, name:m.display_name || m.id, created:m.created_at || ''}));
+}
+$('#aiBindBtn').onclick = async () => {
+  const key = $('#aiKey').value.trim();
+  $('#aiBindErr').textContent = '';
+  if (!key) return;
+  $('#aiBindBtn').disabled = true; $('#aiBindBtn').textContent = t.aiChecking;
+  try {
+    const models = await listModels(key);
+    const pick = models.find(m => /sonnet/i.test(m.id)) || models.find(m => /opus/i.test(m.id)) || models[0];
+    if (!pick) throw new Error('no models');
+    ai = {key, model:pick.id, models}; saveAI(); $('#aiKey').value = ''; paintAIConn();
+  } catch(e){
+    $('#aiBindErr').textContent = t.aiBadKey + (e.message || e);
+  } finally { $('#aiBindBtn').disabled = false; $('#aiBindBtn').textContent = t.aiBind; }
+};
+$('#aiKey').addEventListener('keydown', e => { if (e.key === 'Enter') $('#aiBindBtn').click(); });
+$('#aiUnbind').onclick = () => { ai = {key:'', model:'', models:[]}; try { localStorage.removeItem(AIKEY); } catch(e){} paintAIConn(); };
+
+/* 在 claude.ai 里打开时，用观众自己的账号 —— 不需要密钥 */
+(async () => {
+  try { if (window.claude && typeof window.claude.use === 'function'){ sampleFn = await window.claude.use('sample'); paintAIConn(); } } catch(e){}
+})();
+
+function openAI(mode){
+  if (mode) drawer.querySelector(`input[name=aiTarget][value=${mode}]`).checked = true;
+  if (!curPlan()) drawer.querySelector('input[name=aiTarget][value=new]').checked = true;
+  drawer.querySelector('input[name=aiTarget][value=replace]').disabled = !curPlan();
+  drawer.classList.add('on'); scrim.classList.add('on');
+  setTimeout(() => $('#aiReq').focus(), 250);
+}
+function closeAI(){ drawer.classList.remove('on'); scrim.classList.remove('on'); }
+$('#bAI').onclick = () => openAI();
+$('#aiClose').onclick = closeAI;
+scrim.onclick = closeAI;
+
+/* 提示词：角色被钉死在“给这个页面排计划”上；页面只接受计划 JSON */
+const LANG_NAME = {'zh-Hans':'Simplified Chinese', 'zh-Hant':'Traditional Chinese', en:'English', de:'German'};
+function aiSystem(){
+  return `You are the built-in planning assistant of "Rail Planner", a web page where one person lays out a single day as a horizontal rail of time blocks, a 7-column week grid, a set of house rules (cards), a daily card strip and free notes.
+
+You do exactly ONE job: turn the person's requirements into a plan for this page, or revise the plan they already have. Nothing else — no general conversation, no code, no essays, no advice unrelated to scheduling this page. If the request is not about planning a schedule, routine, time allocation or house rules for this page, reply with exactly one JSON object: {"refuse": "<one short sentence, in the person's language, saying you only plan schedules and rules here>"}
+
+Planning philosophy (apply unless the person says otherwise):
+- A day is a rail: fixed "posts" (meals, sleep, training, a short daily wrap-up) never move; elastic study/work blocks may stretch.
+- Put the most important work in the person's peak hours. Exactly one thing per day is allowed to overrun, and it gets a named buffer block; state the overrun order (what gives way first) in the rules.
+- Every activity has a hard ceiling. Protect sleep, meals and relationships as capacity, not rewards.
+- Spread themes across the week instead of cramming one day; keep at least one lighter recovery day.
+- Include a "floor day" fallback for bad days.
+- Wording must be concrete and startable. Durations in whole minutes. Times ascending, consecutive and non-overlapping from waking to sleeping.
+
+OUTPUT: exactly one JSON object and nothing else — no markdown fences, no commentary before or after. Write all text in ${LANG_NAME[lang]} unless the person clearly writes in another language, then use theirs.
+
+Schema (include ONLY the top-level keys listed under REQUESTED PARTS; omit all others):
+{
+ "title": string, "lede": string,
+ "stats": [{"value": string, "label": string}],            // 3-5 short headline figures
+ "sections": {"day":{"title":string,"desc":string}, "week":{...}, "rules":{...}, "card":{...}, "notes":{...}},
+ "day": [{"time":"HH:MM","name":string,"note":string,"dur":int,"up":int,"color":"#hex"}],   // 8-22 blocks; "up" = max stretch in minutes, only on elastic blocks
+ "week": {"days":[7 short weekday names], "rows":[{"label":string,"sub":string,"color":"#hex","cells":[7 strings]}]},  // 4-9 rows; use "—" for an empty cell
+ "weekNote": string,
+ "cards": [{"eyebrow":string,"title":string,"color":"#hex","items":[string]}],   // 3-5 cards, 3-6 items each; eyebrow like "01 · Quality gate"
+ "strip": [{"label":string,"kind":"line"|"box","text":string,"hi":boolean}],    // 5-9 slots; exactly one hi:true (the one thing that makes the day count); 1-2 "box" slots whose text is checkbox items like "☐ A　☐ B"
+ "notes": [{"label":string,"color":"#hex","text":string}]                       // 1-3 notes; text may contain \n
+}
+Colors — use only these hex values: ${PRESETS.join(', ')}. Convention: #0071e3 the priority subject, #5E8C6A life/body posts, #C77D2B theme blocks, #9AA0A6 breaks and skippable items, #7D6BB0 evening/leisure, #E0392B rules about limits, #D9548A relationships.`;
+}
+function aiUser(req, scopeKeys, mode){
+  const parts = scopeKeys.map(k => k === 'head' ? 'title, lede, stats, sections' : k === 'rules' ? 'cards' : k === 'card' ? 'strip' : k === 'week' ? 'week, weekNote' : k).join('; ');
+  let u = `REQUESTED PARTS: ${parts}\nMODE: ${mode === 'replace' && state ? 'revise the current plan below — keep what still fits, change what the request asks for' : 'create a new plan from scratch'}\n\nPERSON'S REQUEST:\n${req}`;
+  if (state){
+    const cur = {title:state.title, lede:state.lede, stats:state.stats.map(x => ({value:x.value, label:x.label})),
+      sections:state.sections,
+      day:state.day.map(b => ({time:b.time, name:b.name, note:b.note, dur:b.dur, up:b.up, color:b.color})),
+      week:{days:state.week.days, rows:state.week.rows.map(r => ({label:r.label, sub:r.sub, color:r.color, cells:r.cells}))},
+      weekNote:state.weekNote,
+      cards:state.cards.map(c => ({eyebrow:c.eyebrow, title:c.title, color:c.color, items:c.items})),
+      strip:state.strip.map(p => ({label:p.label, kind:p.kind, text:p.text.replace(/<br\s*\/?>/gi,'\n'), hi:!!p.hi})),
+      notes:state.notes.map(n => ({label:n.label, color:n.color, text:n.text}))};
+    let js = JSON.stringify(cur);
+    if (js.length > 18000) js = js.slice(0, 18000) + '…';
+    u += `\n\nCURRENT PLAN (JSON, for context${mode === 'replace' ? ' and revision' : ' only'}):\n${js}`;
+  }
+  return u;
+}
+
+/* 流式调用 Anthropic API（公开网页用） */
+async function callAPI(system, user, onText, signal){
+  const res = await fetch(API + '/messages', {method:'POST', signal, headers:apiHeaders(ai.key),
+    body:JSON.stringify({model:ai.model, max_tokens:8192, stream:true, system, messages:[{role:'user', content:user}]})});
+  if (!res.ok){ let m = ''; try { m = (await res.json()).error?.message || ''; } catch(e){} throw new Error(res.status + ' ' + m); }
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf = '', text = '', stop = null;
+  for (;;){
+    const {value, done} = await reader.read(); if (done) break;
+    buf += dec.decode(value, {stream:true});
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0){
+      const evt = buf.slice(0, i); buf = buf.slice(i + 2);
+      for (const line of evt.split('\n')){
+        if (!line.startsWith('data:')) continue;
+        let j; try { j = JSON.parse(line.slice(5).trim()); } catch(e){ continue; }
+        if (j.type === 'content_block_delta' && j.delta?.type === 'text_delta'){ text += j.delta.text; onText(text); }
+        else if (j.type === 'message_delta' && j.delta?.stop_reason) stop = j.delta.stop_reason;
+        else if (j.type === 'error') throw new Error(j.error?.message || 'stream error');
+      }
+    }
+  }
+  return {text, truncated: stop === 'max_tokens'};
+}
+async function callSample(system, user, onText, signal){
+  const r = await sampleFn(system + '\n\n' + user, {onText:({text}) => onText(text), signal, modelTier:'complex', cache:false});
+  return {text:r.text, truncated:!!r.truncated};
+}
+
+/* 把模型输出收成页面能用的状态 —— 只认计划字段，其他一概丢弃 */
+function extractJSON(txt){
+  try { return JSON.parse(txt); } catch(e){}
+  const m = txt.match(/```(?:json)?\s*([\s\S]*?)```/); if (m){ try { return JSON.parse(m[1]); } catch(e){} }
+  const a = txt.indexOf('{'), b = txt.lastIndexOf('}');
+  if (a >= 0 && b > a){ try { return JSON.parse(txt.slice(a, b + 1)); } catch(e){} }
+  return null;
+}
+function normalizePlan(o, base, scope){
+  const out = JSON.parse(JSON.stringify(base));
+  const S = v => v == null ? '' : String(v);
+  const N = (v, d) => { const n = parseInt(v, 10); return Number.isFinite(n) && n > 0 ? n : d; };
+  const C = v => /^#[0-9a-f]{6}$/i.test(S(v)) ? S(v) : PRESETS[0];
+  const A = v => Array.isArray(v) ? v : [];
+  if (scope.head){
+    if (o.title != null) out.title = S(o.title);
+    if (o.lede != null) out.lede = S(o.lede);
+    if (A(o.stats).length) out.stats = A(o.stats).slice(0, 6).map(x => ({id:uid('s'), value:S(x.value), label:S(x.label)}));
+    if (o.sections && typeof o.sections === 'object'){
+      for (const k of ['day','week','rules','card','notes']){
+        const v = o.sections[k]; if (!v) continue;
+        out.sections[k] = {title:S(v.title) || out.sections[k].title, desc:S(v.desc)};
+      }
+    }
+  }
+  if (scope.day){
+    out.day = A(o.day).slice(0, 30).map(b => {
+      const r = {id:uid('d'), time:S(b.time), name:S(b.name), note:S(b.note), dur:N(b.dur, 60), color:C(b.color)};
+      const up = N(b.up, 0); if (up > r.dur) r.up = up; return r;
+    });
+    if (!out.day.length) throw new Error('nojson');
+  }
+  if (scope.week){
+    const days = A(o.week?.days).length === 7 ? o.week.days.map(S) : out.week.days;
+    const rows = A(o.week?.rows).slice(0, 12).map(r => ({id:uid('w'), label:S(r.label), sub:S(r.sub), color:C(r.color),
+      cells:Array.from({length:7}, (_, i) => { const c = A(r.cells)[i]; return c == null ? '—' : S(c); })}));
+    if (!rows.length) throw new Error('nojson');
+    out.week = {days, rows};
+    if (o.weekNote != null) out.weekNote = S(o.weekNote);
+  }
+  if (scope.rules){
+    out.cards = A(o.cards).slice(0, 8).map(c => ({id:uid('c'), eyebrow:S(c.eyebrow), title:S(c.title), color:C(c.color), items:A(c.items).map(S).filter(Boolean)}));
+    if (!out.cards.length) throw new Error('nojson');
+  }
+  if (scope.card){
+    out.strip = A(o.strip).slice(0, 12).map(p => {
+      const r = {id:uid('p'), label:S(p.label), kind:p.kind === 'box' ? 'box' : 'line', text:esc(S(p.text)).replace(/\n/g, '<br>')};
+      if (p.hi) r.hi = 1; return r;
+    });
+    if (!out.strip.length) throw new Error('nojson');
+  }
+  if (scope.notes){
+    out.notes = A(o.notes).slice(0, 8).map(n => ({id:uid('n'), label:S(n.label), color:C(n.color), text:S(n.text)}));
+  }
+  return out;
+}
+
+function aiSetStatus(html, busy){
+  $('#aiStatus').innerHTML = (busy ? '<span class="spin"></span>' : '') + esc(html);
+}
+function aiReset(){
+  aiDraft = null; $('#aiSum').innerHTML = ''; $('#aiApplyRow').hidden = true; $('#aiErr').textContent = '';
+  $('#aiOut').classList.remove('on'); $('#aiOut').textContent = ''; aiSetStatus('', false);
+}
+$('#aiGo').onclick = async () => {
+  const req = $('#aiReq').value.trim();
+  const scopeKeys = SCOPES.map(x => x[0]).filter(k => aiScopeSel[k]);
+  aiReset();
+  if (!req){ $('#aiErr').textContent = t.aiNeedReq; return; }
+  if (!scopeKeys.length){ $('#aiErr').textContent = t.aiNeedScope; return; }
+  if (!aiReady()) return;
+  const mode = drawer.querySelector('input[name=aiTarget]:checked').value;
+  const scope = Object.fromEntries(scopeKeys.map(k => [k, true]));
+  aiCtl = new AbortController();
+  $('#aiGo').hidden = true; $('#aiStopBtn').hidden = false;
+  aiSetStatus(t.aiThinking, true);
+  const out = $('#aiOut');
+  const onText = txt => { out.classList.add('on'); out.textContent = txt.slice(-600); out.scrollTop = out.scrollHeight; aiSetStatus(t.aiWriting + ' · ' + txt.length, true); };
+  try {
+    const sys = aiSystem(), usr = aiUser(req, scopeKeys, mode);
+    const r = sampleFn ? await callSample(sys, usr, onText, aiCtl.signal) : await callAPI(sys, usr, onText, aiCtl.signal);
+    const obj = extractJSON(r.text);
+    if (!obj){ $('#aiErr').textContent = r.truncated ? t.aiTruncated : t.aiNoJson; aiSetStatus('', false); return; }
+    if (obj.refuse){ $('#aiErr').textContent = t.aiRefused + String(obj.refuse); aiSetStatus('', false); return; }
+    const base = (mode === 'replace' && state) ? state : blankState(lang);
+    let plan;
+    try { plan = normalizePlan(obj, base, scope); }
+    catch(e){ $('#aiErr').textContent = r.truncated ? t.aiTruncated : t.aiNoJson; aiSetStatus('', false); return; }
+    aiDraft = {plan, mode, scope};
+    const sum = [];
+    if (scope.head && plan.title) sum.push(plan.title);
+    if (scope.day) sum.push(plan.day.length + ' ' + t.unitBlocks);
+    if (scope.week) sum.push(plan.week.rows.length + ' ' + t.unitRows);
+    if (scope.rules) sum.push(plan.cards.length + ' ' + t.unitCards);
+    if (scope.card) sum.push(plan.strip.length + ' ' + t.unitCells);
+    if (scope.notes) sum.push(plan.notes.length + ' ' + t.unitNotes);
+    $('#aiSum').innerHTML = sum.map(x => `<span>${esc(x)}</span>`).join('');
+    $('#aiApplyRow').hidden = false;
+    aiSetStatus(r.truncated ? t.aiTruncated : t.aiDone, false);
+    out.classList.remove('on');
+  } catch(e){
+    if (e && (e.code === 'cancelled' || e.name === 'AbortError')){ aiSetStatus('', false); }
+    else { $('#aiErr').textContent = t.aiErr + (e && (e.message || e.code) || e); aiSetStatus('', false); }
+  } finally {
+    aiCtl = null; $('#aiGo').hidden = false; $('#aiStopBtn').hidden = true;
+  }
+};
+$('#aiStopBtn').onclick = () => { if (aiCtl) aiCtl.abort(); };
+$('#aiDiscard').onclick = aiReset;
+$('#aiApply').onclick = () => {
+  if (!aiDraft) return;
+  const {plan, mode} = aiDraft;
+  const name = (plan.title && plan.title.trim()) || t.aiPlanName;
+  const finish = () => {
+    aiReset(); closeAI();
+    startEl.classList.remove('on');
+    render(); paintPlanName();
+    statusEl.textContent = t.saved;
+    scrollTo(0,0);
+  };
+  const cur = curPlan();
+  if (mode === 'replace' && cur){
+    const doReplace = () => { cur.state = plan; cur.name = name + ' · ' + stamp(Date.now()); cur.touched = true; cur.updated = Date.now(); state = plan; saveLib(); finish(); };
+    if (cur.touched) ask(t.reT, t.reD, doReplace, t.replace); else doReplace();
+    return;
+  }
+  addPlan(name + ' · ' + stamp(Date.now()), plan);
+  curPlan().touched = true; saveLib();
+  finish();
+};
 
 /* ═══════════ 10. 启动 ═══════════ */
 lib = loadLib();
