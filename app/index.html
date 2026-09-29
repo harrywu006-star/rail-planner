@@ -1370,8 +1370,10 @@ function paintNow(){
   const HPX = parseFloat(getComputedStyle(tl).getPropertyValue('--hpx')) || 30;
   const line = document.createElement('div'); line.className = 'tlnow'; line.style.top = ((n.h * 60 + n.mi) / 60 * HPX) + 'px';
   bodies[n.wd].appendChild(line); heads[n.wd].classList.add('today');
+  const wd = weekDates(); tl.querySelectorAll('.tlh .tld').forEach((el, i) => { if (el.textContent !== wd[i]) el.textContent = wd[i]; });
 }
 setInterval(() => { if (state) paintNow(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (state && !document.hidden) paintNow(); });
 /* 一日轨道 → 时间轴：铺一天（带 from 的旧时段被替换，手动加的保留） */
 function fillDay(di){
   let cur = null; const evs = [];
