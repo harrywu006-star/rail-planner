@@ -157,6 +157,29 @@ section{margin-top:64px}
 .note .nbody{font-size:14px; line-height:1.62; color:var(--ink2); letter-spacing:-.005em; white-space:pre-wrap; min-height:3.2em}
 
 .strip{display:grid; gap:6px; min-width:1000px}
+
+/* weekly timeline: vertical 24 h axis × 7 day columns */
+.tl{display:grid; grid-template-columns:52px repeat(7,minmax(128px,1fr)); gap:6px; min-width:1000px; --hpx:30px}
+.tl .tlh{background:var(--ink); color:var(--bg); font-weight:600; font-size:14px; letter-spacing:-.01em; text-align:center; padding:9px 6px; border-radius:10px; position:relative; min-height:38px}
+.tl .tlh .ic{position:absolute; right:6px; top:9px; display:none}
+body.edit .tl .tlh .ic{display:grid}
+.tl .tlcorner{background:transparent}
+.tl .tlbody{position:relative; height:calc(var(--hpx) * 24); border-radius:10px; background:var(--surface2);
+  background-image:repeating-linear-gradient(to bottom, var(--hair2) 0, var(--hair2) 1px, transparent 1px, transparent var(--hpx)); background-position:0 -1px}
+.tl .tlaxis{position:relative; height:calc(var(--hpx) * 24)}
+.tl .tlaxis span{position:absolute; right:6px; transform:translateY(-55%); font-size:11px; color:var(--faint); letter-spacing:0; font-variant-numeric:tabular-nums}
+.tl .ev{position:absolute; left:4px; right:4px; border-radius:8px; padding:4px 7px 5px; overflow:hidden; border-left:3px solid var(--edge,var(--hair));
+  display:flex; flex-direction:column; gap:1px; min-height:18px; box-sizing:border-box}
+.tl .ev .et{font-size:10.5px; font-weight:600; color:var(--fg); opacity:.9; letter-spacing:0; line-height:1.2; white-space:nowrap}
+.tl .ev .en{font-size:12px; font-weight:600; color:var(--ink); line-height:1.2; letter-spacing:-.01em}
+.tl .ev.short{flex-direction:row; align-items:center; gap:6px; padding-top:2px; padding-bottom:2px}
+.tl .ev.short .en{font-size:11px}
+.tl .ev .tools{top:3px; right:4px}
+body.edit .tl .ev:hover{z-index:3; box-shadow:var(--sh-m); overflow:visible}
+body.edit .tl .ev .tools{display:none}
+body.edit .tl .ev:hover .tools{display:flex}
+.tl .ev .ic{width:17px; height:17px; font-size:10px}
+.tl .ev .sw{width:17px; height:17px}
 .scell{background:var(--surface2); border-radius:10px; padding:13px 13px 15px; display:flex; flex-direction:column; gap:9px; min-height:104px; position:relative}
 .scell .slb{font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:0}
 .scell .sline{margin-top:auto; border-bottom:1px dashed var(--hair); height:17px}
@@ -366,7 +389,9 @@ a.lnk:hover{text-decoration:underline}
   .card,.stat,.note{box-shadow:none; border:1px solid var(--hair)}
   section{margin-top:20px; break-inside:avoid}
   .hscroll{overflow:visible}
-  .wgrid,.strip{min-width:0}
+  .wgrid,.strip,.tl{min-width:0}
+  .tl{--hpx:16px}
+  .tl .tlh .ic{display:none!important}
   .track{display:flex!important; gap:4px}
   .blk{flex:var(--dur,60) 1 0; min-width:0; min-height:96px}
 }
@@ -573,7 +598,8 @@ const UI = {
  aiNoJson:'返回的内容不是一份合法的计划，请再试一次。', aiNeedReq:'先写一句需求。', aiNeedScope:'至少勾一个部分。',
  aiSent:'发给 Claude 的只有：你写的需求 + 当前这份计划的文字。', aiPlanName:'助手排的计划', aiApplied:'已应用。',
  scopeDay:'一日轨道', scopeWeek:'一周分配', scopeRules:'运行规则', scopeCard:'每日卡片', scopeNotes:'备注', scopeHead:'标题与数字',
- unitBlocks:'段', unitRows:'条轨道', unitCards:'张卡', unitCells:'格', unitNotes:'块备注',
+ unitBlocks:'段', unitRows:'条轨道', unitCards:'张卡', unitCells:'格', unitNotes:'块备注', unitEvents:'个时段',
+ secTime:'一周时间轴', secTimeDesc:'竖轴是 0–24 点，横向是七天：一眼看到每天从早到晚在干什么。', addEvent:'在这一天加一个时段', newEvent:'新时段', tipPrev:'挪到前一天', tipNext:'挪到后一天', phEvTime:'09:00–10:00', hintTime:'时段上：改文字直接点；改时间点小字，写成 09:00–10:30；色点换颜色；◀ ▶ 换天；✕ 删除；列头 ＋ 新增。',
  phAny:'输入…', phStatV:'0', phStatL:'说明',
  newDay:'新的一段', newWeek:'新轨道', newCardEye:'新分类', newCard:'新规则', newStrip:'新格子', newNote:'新备注', newItem:'写一条',
  days:['周一','周二','周三','周四','周五','周六','周日'],
@@ -621,7 +647,8 @@ const UI = {
  aiNoJson:'回傳的內容不是一份合法的計畫，請再試一次。', aiNeedReq:'先寫一句需求。', aiNeedScope:'至少勾一個部分。',
  aiSent:'送給 Claude 的只有：你寫的需求 + 目前這份計畫的文字。', aiPlanName:'助手排的計畫', aiApplied:'已套用。',
  scopeDay:'一日軌道', scopeWeek:'一週分配', scopeRules:'運行規則', scopeCard:'每日卡片', scopeNotes:'備註', scopeHead:'標題與數字',
- unitBlocks:'段', unitRows:'條軌道', unitCards:'張卡', unitCells:'格', unitNotes:'塊備註',
+ unitBlocks:'段', unitRows:'條軌道', unitCards:'張卡', unitCells:'格', unitNotes:'塊備註', unitEvents:'個時段',
+ secTime:'一週時間軸', secTimeDesc:'豎軸是 0–24 點，橫向是七天：一眼看到每天從早到晚在做什麼。', addEvent:'在這一天加一個時段', newEvent:'新時段', tipPrev:'挪到前一天', tipNext:'挪到後一天', phEvTime:'09:00–10:00', hintTime:'時段上：改文字直接點；改時間點小字，寫成 09:00–10:30；色點換顏色；◀ ▶ 換天；✕ 刪除；欄頭 ＋ 新增。',
  phAny:'輸入…', phStatV:'0', phStatL:'說明',
  newDay:'新的一段', newWeek:'新軌道', newCardEye:'新分類', newCard:'新規則', newStrip:'新格子', newNote:'新備註', newItem:'寫一條',
  days:['週一','週二','週三','週四','週五','週六','週日'],
@@ -669,7 +696,8 @@ const UI = {
  aiNoJson:'The reply was not a valid plan. Please try again.', aiNeedReq:'Write a sentence about what you need first.', aiNeedScope:'Tick at least one part.',
  aiSent:'Only two things are sent to Claude: your request and the text of the current plan.', aiPlanName:'Plan by the assistant', aiApplied:'Applied.',
  scopeDay:'Day rail', scopeWeek:'Week grid', scopeRules:'House rules', scopeCard:'Daily card', scopeNotes:'Notes', scopeHead:'Title & figures',
- unitBlocks:'blocks', unitRows:'rails', unitCards:'cards', unitCells:'slots', unitNotes:'notes',
+ unitBlocks:'blocks', unitRows:'rails', unitCards:'cards', unitCells:'slots', unitNotes:'notes', unitEvents:'slots',
+ secTime:'Week timeline', secTimeDesc:'The vertical axis runs 0–24 h, the columns are the seven days: see at a glance what each day holds from morning to night.', addEvent:'Add a slot to this day', newEvent:'New slot', tipPrev:'Move to the previous day', tipNext:'Move to the next day', phEvTime:'09:00–10:00', hintTime:'On a slot: click the text to edit; click the small time and write 09:00–10:30; the dot changes colour; ◀ ▶ move it a day; ✕ deletes; ＋ in a column header adds one.',
  phAny:'Type…', phStatV:'0', phStatL:'Caption',
  newDay:'New block', newWeek:'New rail', newCardEye:'New category', newCard:'New rule', newStrip:'New slot', newNote:'New note', newItem:'Write a line',
  days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
@@ -717,7 +745,8 @@ const UI = {
  aiNoJson:'Die Antwort war kein gültiger Plan. Bitte noch einmal versuchen.', aiNeedReq:'Schreib zuerst einen Satz dazu, was du brauchst.', aiNeedScope:'Mindestens einen Teil ankreuzen.',
  aiSent:'An Claude gehen nur zwei Dinge: deine Anfrage und der Text des aktuellen Plans.', aiPlanName:'Plan vom Assistenten', aiApplied:'Übernommen.',
  scopeDay:'Tagesstrecke', scopeWeek:'Wochenraster', scopeRules:'Betriebsregeln', scopeCard:'Tageskarte', scopeNotes:'Notizen', scopeHead:'Titel & Kennzahlen',
- unitBlocks:'Abschnitte', unitRows:'Zeilen', unitCards:'Karten', unitCells:'Felder', unitNotes:'Notizen',
+ unitBlocks:'Abschnitte', unitRows:'Zeilen', unitCards:'Karten', unitCells:'Felder', unitNotes:'Notizen', unitEvents:'Zeitfenster',
+ secTime:'Wochen-Zeitachse', secTimeDesc:'Die senkrechte Achse läuft von 0 bis 24 Uhr, die Spalten sind die sieben Tage: auf einen Blick, was jeder Tag von morgens bis abends enthält.', addEvent:'Zeitfenster an diesem Tag hinzufügen', newEvent:'Neues Zeitfenster', tipPrev:'Einen Tag nach vorn', tipNext:'Einen Tag nach hinten', phEvTime:'09:00–10:00', hintTime:'Am Zeitfenster: Text anklicken und ändern; die kleine Zeit anklicken und 09:00–10:30 schreiben; der Punkt ändert die Farbe; ◀ ▶ verschiebt um einen Tag; ✕ löscht; ＋ im Spaltenkopf fügt eines hinzu.',
  phAny:'Eingeben…', phStatV:'0', phStatL:'Bezeichnung',
  newDay:'Neuer Abschnitt', newWeek:'Neue Zeile', newCardEye:'Neue Kategorie', newCard:'Neue Regel', newStrip:'Neues Feld', newNote:'Neue Notiz', newItem:'Zeile schreiben',
  days:['Mo','Di','Mi','Do','Fr','Sa','So'],
@@ -737,7 +766,8 @@ const DEMO = {
       week:['一周分配 · 上课期 1','12.10 → 18.12。前四条是 TUCaN 课表（全部在 S101/A1），下面是围着课表排的学习和爱好。🔥 视频当主角，其余维持。每周日复盘时可以改。'],
       rules:['运行规则','复习在固定时间自动发生；同一时间只有一个爱好在进攻；R6 按局数算，不按时间。'],
       card:['每日卡片','前一天收尾时填。必做 = 复习块 + 当天 Nacharbeit —— 必做没完成，不开游戏。'],
-      notes:['备注','课表、轮换表、学期时间线、周复盘清单、时间账都放这儿。']},
+      notes:['备注','课表、轮换表、学期时间线、周复盘清单、时间账都放这儿。'],
+      time:['一周时间轴','竖轴 0–24 点，横向七天。课表是钉死的桩，学习块围着课排；晚上 20:20 之后留白是故意的 —— 那是缓冲，不是库存。']},
  day:[['07:00','起床 · 早餐','桩',60,5,0],
       ['08:00','复习块','第一件事 · Anki 15′ + 1 道 ✗ 题 15′',30,0,0],
       ['08:30','上午 90′ · Mathe / ETiT','课前是全周最稳的空档 · Übungsblatt 先自己做',90,0,110],
@@ -767,6 +797,27 @@ const DEMO = {
    ['🔧 乐理 · 建模','乐理 3 × 15–20′ · 建模 1 ×',7,['乐理 15–20′','—','乐理 15–20′','—','乐理 15–20′','—','建模 1.5–2 h · 想做才做']],
    ['复盘 · 休息','',5,['—','—','—','—','—','—','15′ 周复盘 → 其余时间完全不学习']]]},
  weekNote:'周四是全周最重的一天：11:40 Mathe → 13:30 BuFü → 15:20 Vertragsrecht → 17:10 ETiT，中间只有 10 分钟换气 —— 所以 11:15 先吃饭、包里带吃的，第二块缩到 45′，Nacharbeit 挪到 19:30 做 40′。所有课都在 11:40 之后开始：08:00–11:15 是全周最稳定的自学窗口，永远留给复习块 + Mathe / ETiT。周三上午 09:50 是 Mathe Übung（S103/125），晚上 17:10 是 Vertragsrecht（Übung 和 VL 隔周交替）—— 中间 11:30–17:10 整段空着，是剪片和运动的天然位置。每周上课约 17 h。',
+ events:[
+   [0,'00:00','07:00','睡',13],[0,'23:00','24:00','睡',13],[1,'00:00','07:00','睡',13],[1,'23:00','24:00','睡',13],
+   [2,'00:00','07:00','睡',13],[2,'23:00','24:00','睡',13],[3,'00:00','07:00','睡',13],[3,'23:00','24:00','睡',13],
+   [4,'00:00','07:00','睡',13],[4,'23:00','24:00','睡',13],[5,'00:00','07:00','睡',13],[5,'23:00','24:00','睡',13],
+   [6,'00:00','07:00','睡',13],[6,'23:00','24:00','睡',13],[0,'08:00','08:30','复习块',12],[1,'08:00','08:30','复习块',12],
+   [2,'08:00','08:30','复习块',12],[3,'08:00','08:30','复习块',12],[4,'08:00','08:30','复习块',12],[5,'08:00','08:30','复习块',12],
+   [0,'08:30','10:00','Mathe I Blatt',1],[0,'10:15','11:15','Buchungssätze',6],[0,'11:30','12:15','午餐',5],[0,'13:00','14:00','运动 / 买菜',4],
+   [0,'15:20','17:00','ETiT I VL',2],[0,'17:10','17:40','Nacharbeit',12],[0,'18:00','19:00','晚餐',5],[0,'19:00','19:20','乐理 15–20′',10],
+   [0,'20:00','20:20','收尾 · 明天的卡片',12],[1,'08:30','10:00','Mathe I 续',1],[1,'10:15','11:15','Fälle · Gutachtenstil',6],[1,'11:15','11:40','午餐（早）',5],
+   [1,'11:40','13:20','Mathe I VL',0],[1,'13:30','14:00','Nacharbeit',12],[1,'15:00','16:00','运动 / 买菜',4],[1,'18:00','19:00','晚餐',5],
+   [1,'20:00','21:30','R6 ≤ 2 局',9],[1,'21:30','21:50','收尾 · 明天的卡片',12],[2,'08:30','09:30','ETiT I Blatt 60′',1],[2,'09:50','11:30','Mathe I Übung 09 · S103/125',0],
+   [2,'11:40','12:00','Nacharbeit',12],[2,'12:00','13:00','午餐',5],[2,'13:30','14:30','Buchungssätze',6],[2,'14:30','16:00','🔥 剪片',11],
+   [2,'16:00','17:00','运动 / 买菜',4],[2,'17:10','18:50','Vertragsrecht · Übung/VL 交替',7],[2,'19:00','19:30','Nacharbeit',12],[2,'19:30','20:30','晚餐',5],
+   [2,'20:30','20:50','乐理 15–20′',10],[3,'08:30','10:00','ETiT I 续',1],[3,'10:15','11:00','Fälle · Anki 45′',6],[3,'11:10','11:35','午餐（早）',5],
+   [3,'11:40','13:20','Mathe I VL',0],[3,'13:30','15:10','BuFü / Bilanzierung',3],[3,'15:20','17:00','Vertragsrecht VL',7],[3,'17:10','18:50','ETiT I VL',2],
+   [3,'19:00','19:30','晚餐',5],[3,'19:30','20:10','Nacharbeit · 四门',12],[3,'20:30','22:00','R6 ≤ 2 局',9],[4,'08:30','10:00','补漏 · 卡住的步',1],
+   [4,'10:15','11:15','Praktikum 准备',6],[4,'11:30','12:15','午餐',5],[4,'13:00','14:30','运动 / 买菜',4],[4,'15:20','17:00','BuFü / Bilanzierung',3],
+   [4,'17:10','18:50','ETiT I VL',2],[4,'19:00','19:30','晚餐',5],[4,'19:30','20:00','Nacharbeit',12],[4,'20:00','20:20','乐理 15–20′',10],
+   [5,'09:00','12:00','Übungsblatt 收尾',1],[5,'12:00','13:00','午餐',5],[5,'14:00','17:00','🔥 视频大块',11],[5,'18:00','19:00','晚餐',5],
+   [5,'20:00','22:30','R6 ≤ 4 局',9],[6,'09:00','11:00','白纸回忆 + 重做 ✗',12],[6,'11:00','11:15','15′ 周复盘',6],[6,'12:00','13:00','午餐',5],
+   [6,'14:00','16:00','建模 · 想做才做',10],[6,'18:00','19:00','晚餐',5],[6,'19:00','23:00','自由 / 缓冲',13]],
  cards:[
   ['01 · 三层复习','重读不算复习：合上书，自己想、自己写、自己做',0,[
    '每天 · 复习块 30′ 是学习的第一件事：Anki 到期卡 15′ + 1 道到期的 ✗ 题 15′（遮住答案自己做）。',
@@ -817,7 +868,8 @@ const DEMO = {
       week:['一週分配 · 上課期 1','12.10 → 18.12。前四條是 TUCaN 課表（全部在 S101/A1），下面是圍著課表排的學習和愛好。🔥 影片當主角，其餘維持。每週日複盤時可以改。'],
       rules:['運行規則','複習在固定時間自動發生；同一時間只有一個愛好在進攻；R6 按局數算，不按時間。'],
       card:['每日卡片','前一天收尾時填。必做 = 複習塊 + 當天 Nacharbeit —— 必做沒完成，不開遊戲。'],
-      notes:['備註','課表、輪換表、學期時間線、週複盤清單、時間帳都放這兒。']},
+      notes:['備註','課表、輪換表、學期時間線、週複盤清單、時間帳都放這兒。'],
+      time:['一週時間軸','豎軸 0–24 點，橫向七天。課表是釘死的樁，學習塊圍著課排；晚上 20:20 之後留白是故意的 —— 那是緩衝，不是庫存。']},
  day:[['07:00','起床 · 早餐','樁',60,5,0],
       ['08:00','複習塊','第一件事 · Anki 15′ + 1 道 ✗ 題 15′',30,0,0],
       ['08:30','上午 90′ · Mathe / ETiT','課前是全週最穩的空檔 · Übungsblatt 先自己做',90,0,110],
@@ -847,6 +899,27 @@ const DEMO = {
    ['🔧 樂理 · 建模','樂理 3 × 15–20′ · 建模 1 ×',7,['樂理 15–20′','—','樂理 15–20′','—','樂理 15–20′','—','建模 1.5–2 h · 想做才做']],
    ['複盤 · 休息','',5,['—','—','—','—','—','—','15′ 週複盤 → 其餘時間完全不學習']]]},
  weekNote:'週四是全週最重的一天：11:40 Mathe → 13:30 BuFü → 15:20 Vertragsrecht → 17:10 ETiT，中間只有 10 分鐘換氣 —— 所以 11:15 先吃飯、包裡帶吃的，第二塊縮到 45′，Nacharbeit 挪到 19:30 做 40′。所有課都在 11:40 之後開始：08:00–11:15 是全週最穩定的自學窗口，永遠留給複習塊 + Mathe / ETiT。週三上午 09:50 是 Mathe Übung（S103/125），晚上 17:10 是 Vertragsrecht（Übung 和 VL 隔週交替）—— 中間 11:30–17:10 整段空著，是剪片和運動的天然位置。每週上課約 17 h。',
+ events:[
+   [0,'00:00','07:00','睡',13],[0,'23:00','24:00','睡',13],[1,'00:00','07:00','睡',13],[1,'23:00','24:00','睡',13],
+   [2,'00:00','07:00','睡',13],[2,'23:00','24:00','睡',13],[3,'00:00','07:00','睡',13],[3,'23:00','24:00','睡',13],
+   [4,'00:00','07:00','睡',13],[4,'23:00','24:00','睡',13],[5,'00:00','07:00','睡',13],[5,'23:00','24:00','睡',13],
+   [6,'00:00','07:00','睡',13],[6,'23:00','24:00','睡',13],[0,'08:00','08:30','複習塊',12],[1,'08:00','08:30','複習塊',12],
+   [2,'08:00','08:30','複習塊',12],[3,'08:00','08:30','複習塊',12],[4,'08:00','08:30','複習塊',12],[5,'08:00','08:30','複習塊',12],
+   [0,'08:30','10:00','Mathe I Blatt',1],[0,'10:15','11:15','Buchungssätze',6],[0,'11:30','12:15','午餐',5],[0,'13:00','14:00','運動 / 買菜',4],
+   [0,'15:20','17:00','ETiT I VL',2],[0,'17:10','17:40','Nacharbeit',12],[0,'18:00','19:00','晚餐',5],[0,'19:00','19:20','樂理 15–20′',10],
+   [0,'20:00','20:20','收尾 · 明天的卡片',12],[1,'08:30','10:00','Mathe I 續',1],[1,'10:15','11:15','Fälle · Gutachtenstil',6],[1,'11:15','11:40','午餐（早）',5],
+   [1,'11:40','13:20','Mathe I VL',0],[1,'13:30','14:00','Nacharbeit',12],[1,'15:00','16:00','運動 / 買菜',4],[1,'18:00','19:00','晚餐',5],
+   [1,'20:00','21:30','R6 ≤ 2 局',9],[1,'21:30','21:50','收尾 · 明天的卡片',12],[2,'08:30','09:30','ETiT I Blatt 60′',1],[2,'09:50','11:30','Mathe I Übung 09 · S103/125',0],
+   [2,'11:40','12:00','Nacharbeit',12],[2,'12:00','13:00','午餐',5],[2,'13:30','14:30','Buchungssätze',6],[2,'14:30','16:00','🔥 剪片',11],
+   [2,'16:00','17:00','運動 / 買菜',4],[2,'17:10','18:50','Vertragsrecht · Übung/VL 交替',7],[2,'19:00','19:30','Nacharbeit',12],[2,'19:30','20:30','晚餐',5],
+   [2,'20:30','20:50','樂理 15–20′',10],[3,'08:30','10:00','ETiT I 續',1],[3,'10:15','11:00','Fälle · Anki 45′',6],[3,'11:10','11:35','午餐（早）',5],
+   [3,'11:40','13:20','Mathe I VL',0],[3,'13:30','15:10','BuFü / Bilanzierung',3],[3,'15:20','17:00','Vertragsrecht VL',7],[3,'17:10','18:50','ETiT I VL',2],
+   [3,'19:00','19:30','晚餐',5],[3,'19:30','20:10','Nacharbeit · 四門',12],[3,'20:30','22:00','R6 ≤ 2 局',9],[4,'08:30','10:00','補漏 · 卡住的步',1],
+   [4,'10:15','11:15','Praktikum 準備',6],[4,'11:30','12:15','午餐',5],[4,'13:00','14:30','運動 / 買菜',4],[4,'15:20','17:00','BuFü / Bilanzierung',3],
+   [4,'17:10','18:50','ETiT I VL',2],[4,'19:00','19:30','晚餐',5],[4,'19:30','20:00','Nacharbeit',12],[4,'20:00','20:20','樂理 15–20′',10],
+   [5,'09:00','12:00','Übungsblatt 收尾',1],[5,'12:00','13:00','午餐',5],[5,'14:00','17:00','🔥 影片大塊',11],[5,'18:00','19:00','晚餐',5],
+   [5,'20:00','22:30','R6 ≤ 4 局',9],[6,'09:00','11:00','白紙回憶 + 重做 ✗',12],[6,'11:00','11:15','15′ 週複盤',6],[6,'12:00','13:00','午餐',5],
+   [6,'14:00','16:00','建模 · 想做才做',10],[6,'18:00','19:00','晚餐',5],[6,'19:00','23:00','自由 / 緩衝',13]],
  cards:[
   ['01 · 三層複習','重讀不算複習：闔上書，自己想、自己寫、自己做',0,[
    '每天 · 複習塊 30′ 是學習的第一件事：Anki 到期卡 15′ + 1 道到期的 ✗ 題 15′（遮住答案自己做）。',
@@ -897,7 +970,8 @@ const DEMO = {
       week:['The week · lecture period 1','12.10 → 18.12. The first four rows are the TUCaN timetable (all in S101/A1); below them, study and hobbies arranged around it. 🔥 video leads, the rest tick over. Change it at the Sunday review.'],
       rules:['House rules','Review happens at fixed times, automatically; only one hobby attacks at a time; R6 is counted in matches, not minutes.'],
       card:['Daily card','Fill it in the evening before. Must-do = review block + today’s Nacharbeit — no game until both are done.'],
-      notes:['Notes','Timetable, rotation table, semester timeline, Sunday review checklist and the time budget live here.']},
+      notes:['Notes','Timetable, rotation table, semester timeline, Sunday review checklist and the time budget live here.'],
+      time:['Week timeline','Vertical axis 0–24 h, seven day columns. Lectures are the fixed posts, study blocks are arranged around them; the empty space after 20:20 is deliberate — buffer, not stock.']},
  day:[['07:00','Up · breakfast','post',60,5,0],
       ['08:00','Review block','first thing · Anki 15′ + one ✗ problem 15′',30,0,0],
       ['08:30','Morning 90′ · Mathe / ETiT','the steadiest gap of the week, before lectures · attempt the Übungsblatt yourself first',90,0,110],
@@ -927,6 +1001,27 @@ const DEMO = {
    ['🔧 Theory · modelling','theory 3 × 15–20′ · modelling 1 ×',7,['theory 15–20′','—','theory 15–20′','—','theory 15–20′','—','modelling 1.5–2 h · only if you feel like it']],
    ['Review · rest','',5,['—','—','—','—','—','—','15′ weekly review → then no studying at all']]]},
  weekNote:'Thursday is the heaviest day of the week: 11:40 Mathe → 13:30 BuFü → 15:20 Vertragsrecht → 17:10 ETiT with only ten-minute gaps — so eat at 11:15, carry food, shrink the second block to 45′ and move Nacharbeit to 19:30 for 40′. Every lecture starts at 11:40 or later: 08:00–11:15 is the steadiest self-study window of the week and always belongs to the review block + Mathe / ETiT. Wednesday has the Mathe Übung at 09:50 (S103/125) and Vertragsrecht at 17:10 (Übung and lecture alternate weekly) — the whole stretch 11:30–17:10 is free, the natural home for editing and exercise. About 17 h of lectures a week.',
+ events:[
+   [0,'00:00','07:00','Sleep',13],[0,'23:00','24:00','Sleep',13],[1,'00:00','07:00','Sleep',13],[1,'23:00','24:00','Sleep',13],
+   [2,'00:00','07:00','Sleep',13],[2,'23:00','24:00','Sleep',13],[3,'00:00','07:00','Sleep',13],[3,'23:00','24:00','Sleep',13],
+   [4,'00:00','07:00','Sleep',13],[4,'23:00','24:00','Sleep',13],[5,'00:00','07:00','Sleep',13],[5,'23:00','24:00','Sleep',13],
+   [6,'00:00','07:00','Sleep',13],[6,'23:00','24:00','Sleep',13],[0,'08:00','08:30','Review block',12],[1,'08:00','08:30','Review block',12],
+   [2,'08:00','08:30','Review block',12],[3,'08:00','08:30','Review block',12],[4,'08:00','08:30','Review block',12],[5,'08:00','08:30','Review block',12],
+   [0,'08:30','10:00','Mathe I Blatt',1],[0,'10:15','11:15','Buchungssätze',6],[0,'11:30','12:15','Lunch',5],[0,'13:00','14:00','Exercise / groceries',4],
+   [0,'15:20','17:00','ETiT I lecture',2],[0,'17:10','17:40','Nacharbeit',12],[0,'18:00','19:00','Dinner',5],[0,'19:00','19:20','Theory 15–20′',10],
+   [0,'20:00','20:20','Wrap up · tomorrow’s card',12],[1,'08:30','10:00','Mathe I, cont.',1],[1,'10:15','11:15','Fälle · Gutachtenstil',6],[1,'11:15','11:40','Early lunch',5],
+   [1,'11:40','13:20','Mathe I lecture',0],[1,'13:30','14:00','Nacharbeit',12],[1,'15:00','16:00','Exercise / groceries',4],[1,'18:00','19:00','Dinner',5],
+   [1,'20:00','21:30','R6 ≤ 2 matches',9],[1,'21:30','21:50','Wrap up · tomorrow’s card',12],[2,'08:30','09:30','ETiT I Blatt 60′',1],[2,'09:50','11:30','Mathe I Übung 09 · S103/125',0],
+   [2,'11:40','12:00','Nacharbeit',12],[2,'12:00','13:00','Lunch',5],[2,'13:30','14:30','Buchungssätze',6],[2,'14:30','16:00','🔥 Editing',11],
+   [2,'16:00','17:00','Exercise / groceries',4],[2,'17:10','18:50','Vertragsrecht · Übung/lecture alt.',7],[2,'19:00','19:30','Nacharbeit',12],[2,'19:30','20:30','Dinner',5],
+   [2,'20:30','20:50','Theory 15–20′',10],[3,'08:30','10:00','ETiT I, cont.',1],[3,'10:15','11:00','Fälle · Anki 45′',6],[3,'11:10','11:35','Early lunch',5],
+   [3,'11:40','13:20','Mathe I lecture',0],[3,'13:30','15:10','BuFü / Bilanzierung',3],[3,'15:20','17:00','Vertragsrecht lecture',7],[3,'17:10','18:50','ETiT I lecture',2],
+   [3,'19:00','19:30','Dinner',5],[3,'19:30','20:10','Nacharbeit · four courses',12],[3,'20:30','22:00','R6 ≤ 2 matches',9],[4,'08:30','10:00','Patch gaps · stuck steps',1],
+   [4,'10:15','11:15','Prep Praktikum',6],[4,'11:30','12:15','Lunch',5],[4,'13:00','14:30','Exercise / groceries',4],[4,'15:20','17:00','BuFü / Bilanzierung',3],
+   [4,'17:10','18:50','ETiT I lecture',2],[4,'19:00','19:30','Dinner',5],[4,'19:30','20:00','Nacharbeit',12],[4,'20:00','20:20','Theory 15–20′',10],
+   [5,'09:00','12:00','Finish the Übungsblätter',1],[5,'12:00','13:00','Lunch',5],[5,'14:00','17:00','🔥 Video block',11],[5,'18:00','19:00','Dinner',5],
+   [5,'20:00','22:30','R6 ≤ 4 matches',9],[6,'09:00','11:00','Blurting + redo ✗',12],[6,'11:00','11:15','15′ weekly review',6],[6,'12:00','13:00','Lunch',5],
+   [6,'14:00','16:00','Modelling · if you feel like it',10],[6,'18:00','19:00','Dinner',5],[6,'19:00','23:00','Free / buffer',13]],
  cards:[
   ['01 · Three layers of review','Re-reading is not review: shut the book, then think, write and solve yourself',0,[
    'Daily · the 30′ review block is the first thing you study: Anki due cards 15′ + one due ✗ problem 15′ (cover the answer, solve it).',
@@ -977,7 +1072,8 @@ const DEMO = {
       week:['Die Woche · Vorlesungszeit 1','12.10 → 18.12. Die ersten vier Zeilen sind der TUCaN-Stundenplan (alles in S101/A1), darunter Lernen und Hobbys darum herum. 🔥 Video führt, der Rest läuft auf Sparflamme. Beim Sonntagsrückblick anpassen.'],
       rules:['Betriebsregeln','Wiederholen passiert automatisch zu festen Zeiten; nur ein Hobby greift gleichzeitig an; R6 wird in Runden gezählt, nicht in Minuten.'],
       card:['Tageskarte','Am Vorabend ausfüllen. Pflicht = Wiederholblock + Nacharbeit des Tages — kein Spiel, bevor beides erledigt ist.'],
-      notes:['Notizen','Stundenplan, Rotationstabelle, Semesterzeitplan, Checkliste für den Sonntagsrückblick und die Zeitbilanz stehen hier.']},
+      notes:['Notizen','Stundenplan, Rotationstabelle, Semesterzeitplan, Checkliste für den Sonntagsrückblick und die Zeitbilanz stehen hier.'],
+      time:['Wochen-Zeitachse','Senkrechte Achse 0–24 Uhr, sieben Tagesspalten. Die Vorlesungen sind die festen Pfosten, die Lernblöcke liegen darum herum; der freie Raum nach 20:20 ist Absicht — Puffer, kein Vorrat.']},
  day:[['07:00','Aufstehen · Frühstück','Pfosten',60,5,0],
       ['08:00','Wiederholblock','zuerst · Anki 15′ + eine ✗-Aufgabe 15′',30,0,0],
       ['08:30','Vormittags-90′ · Mathe / ETiT','die verlässlichste Lücke der Woche, vor den Vorlesungen · Übungsblatt erst selbst versuchen',90,0,110],
@@ -1007,6 +1103,27 @@ const DEMO = {
    ['🔧 Theorie · Modellieren','Theorie 3 × 15–20′ · Modellieren 1 ×',7,['Theorie 15–20′','—','Theorie 15–20′','—','Theorie 15–20′','—','Modellieren 1,5–2 h · nur bei Lust']],
    ['Rückblick · Ruhe','',5,['—','—','—','—','—','—','15′ Wochenrückblick → danach gar nicht lernen']]]},
  weekNote:'Der Donnerstag ist der schwerste Tag der Woche: 11:40 Mathe → 13:30 BuFü → 15:20 Vertragsrecht → 17:10 ETiT mit nur zehn Minuten dazwischen — also um 11:15 essen, etwas mitnehmen, den zweiten Block auf 45′ kürzen und die Nacharbeit auf 19:30 legen, 40′. Jede Vorlesung beginnt frühestens 11:40: 08:00–11:15 ist das verlässlichste Selbstlernfenster der Woche und gehört immer dem Wiederholblock + Mathe / ETiT. Am Mittwoch liegen die Mathe-Übung um 09:50 (S103/125) und Vertragsrecht um 17:10 (Übung und Vorlesung im wöchentlichen Wechsel) — dazwischen ist 11:30–17:10 frei, der natürliche Platz für Schnitt und Sport. Etwa 17 h Lehrveranstaltungen pro Woche.',
+ events:[
+   [0,'00:00','07:00','Schlafen',13],[0,'23:00','24:00','Schlafen',13],[1,'00:00','07:00','Schlafen',13],[1,'23:00','24:00','Schlafen',13],
+   [2,'00:00','07:00','Schlafen',13],[2,'23:00','24:00','Schlafen',13],[3,'00:00','07:00','Schlafen',13],[3,'23:00','24:00','Schlafen',13],
+   [4,'00:00','07:00','Schlafen',13],[4,'23:00','24:00','Schlafen',13],[5,'00:00','07:00','Schlafen',13],[5,'23:00','24:00','Schlafen',13],
+   [6,'00:00','07:00','Schlafen',13],[6,'23:00','24:00','Schlafen',13],[0,'08:00','08:30','Wiederholblock',12],[1,'08:00','08:30','Wiederholblock',12],
+   [2,'08:00','08:30','Wiederholblock',12],[3,'08:00','08:30','Wiederholblock',12],[4,'08:00','08:30','Wiederholblock',12],[5,'08:00','08:30','Wiederholblock',12],
+   [0,'08:30','10:00','Mathe I Blatt',1],[0,'10:15','11:15','Buchungssätze',6],[0,'11:30','12:15','Mittagessen',5],[0,'13:00','14:00','Sport / Einkauf',4],
+   [0,'15:20','17:00','ETiT I VL',2],[0,'17:10','17:40','Nacharbeit',12],[0,'18:00','19:00','Abendessen',5],[0,'19:00','19:20','Theorie 15–20′',10],
+   [0,'20:00','20:20','Abschluss · Karte für morgen',12],[1,'08:30','10:00','Mathe I weiter',1],[1,'10:15','11:15','Fälle · Gutachtenstil',6],[1,'11:15','11:40','Frühes Mittagessen',5],
+   [1,'11:40','13:20','Mathe I VL',0],[1,'13:30','14:00','Nacharbeit',12],[1,'15:00','16:00','Sport / Einkauf',4],[1,'18:00','19:00','Abendessen',5],
+   [1,'20:00','21:30','R6 ≤ 2 Runden',9],[1,'21:30','21:50','Abschluss · Karte für morgen',12],[2,'08:30','09:30','ETiT I Blatt 60′',1],[2,'09:50','11:30','Mathe I Übung 09 · S103/125',0],
+   [2,'11:40','12:00','Nacharbeit',12],[2,'12:00','13:00','Mittagessen',5],[2,'13:30','14:30','Buchungssätze',6],[2,'14:30','16:00','🔥 Schnitt',11],
+   [2,'16:00','17:00','Sport / Einkauf',4],[2,'17:10','18:50','Vertragsrecht · Übung/VL im Wechsel',7],[2,'19:00','19:30','Nacharbeit',12],[2,'19:30','20:30','Abendessen',5],
+   [2,'20:30','20:50','Theorie 15–20′',10],[3,'08:30','10:00','ETiT I weiter',1],[3,'10:15','11:00','Fälle · Anki 45′',6],[3,'11:10','11:35','Frühes Mittagessen',5],
+   [3,'11:40','13:20','Mathe I VL',0],[3,'13:30','15:10','BuFü / Bilanzierung',3],[3,'15:20','17:00','Vertragsrecht VL',7],[3,'17:10','18:50','ETiT I VL',2],
+   [3,'19:00','19:30','Abendessen',5],[3,'19:30','20:10','Nacharbeit · vier Fächer',12],[3,'20:30','22:00','R6 ≤ 2 Runden',9],[4,'08:30','10:00','Lücken · hakende Schritte',1],
+   [4,'10:15','11:15','Praktikum vorbereiten',6],[4,'11:30','12:15','Mittagessen',5],[4,'13:00','14:30','Sport / Einkauf',4],[4,'15:20','17:00','BuFü / Bilanzierung',3],
+   [4,'17:10','18:50','ETiT I VL',2],[4,'19:00','19:30','Abendessen',5],[4,'19:30','20:00','Nacharbeit',12],[4,'20:00','20:20','Theorie 15–20′',10],
+   [5,'09:00','12:00','Übungsblätter fertig',1],[5,'12:00','13:00','Mittagessen',5],[5,'14:00','17:00','🔥 Videoblock',11],[5,'18:00','19:00','Abendessen',5],
+   [5,'20:00','22:30','R6 ≤ 4 Runden',9],[6,'09:00','11:00','Blurting + ✗ neu rechnen',12],[6,'11:00','11:15','15′ Wochenrückblick',6],[6,'12:00','13:00','Mittagessen',5],
+   [6,'14:00','16:00','Modellieren · nur bei Lust',10],[6,'18:00','19:00','Abendessen',5],[6,'19:00','23:00','Frei / Puffer',13]],
  cards:[
   ['01 · Drei Ebenen Wiederholung','Nochmal lesen zählt nicht: Buch zu, dann selbst denken, schreiben, rechnen',0,[
    'Täglich · der 30′-Wiederholblock ist das Erste beim Lernen: fällige Anki-Karten 15′ + eine fällige ✗-Aufgabe 15′ (Lösung abdecken, selbst rechnen).',
@@ -1076,7 +1193,7 @@ function demoState(L){
   return {
     v:3, title:d.title, lede:d.lede,
     stats:d.stats.map(([value,label]) => ({id:uid('s'), value, label})),
-    sections:{day:sec(d,'day'), week:sec(d,'week'), rules:sec(d,'rules'), card:sec(d,'card'), notes:sec(d,'notes')},
+    sections:{day:sec(d,'day'), week:sec(d,'week'), time:secTime(d), rules:sec(d,'rules'), card:sec(d,'card'), notes:sec(d,'notes')},
     day:d.day.map(([time,name,note,dur,ci,up]) => {
       const o = {id:uid('d'), time, name, note, dur, color:PRESETS[ci]};
       if (up) o.up = up; return o;
@@ -1089,10 +1206,12 @@ function demoState(L){
     strip:d.strip.map(([label,kind,text,hi]) => {
       const o = {id:uid('p'), label, kind, text}; if (hi) o.hi = 1; return o;
     }),
-    notes:d.notes.map(([label,ci,text]) => ({id:uid('n'), label, color:PRESETS[ci], text}))
+    notes:d.notes.map(([label,ci,text]) => ({id:uid('n'), label, color:PRESETS[ci], text})),
+    events:(d.events || []).map(([day,start,end,name,ci]) => ({id:uid('e'), day, start, end, name, color:PRESETS[ci]}))
   };
 }
 const sec = (d,k) => ({title:d.sec[k][0], desc:d.sec[k][1]});
+const secTime = (d) => d.sec.time ? {title:d.sec.time[0], desc:d.sec.time[1]} : {title:UI[lang].secTime, desc:UI[lang].secTimeDesc};
 
 function blankState(L){
   const d = DEMO[L], D = UI[L].days;
@@ -1100,7 +1219,7 @@ function blankState(L){
   return {
     v:3, title:'', lede:'',
     stats:[0,1,2].map(() => ({id:uid('s'), value:'', label:''})),
-    sections:{day:{title:d.sec.day[0], desc:''}, week:{title:d.sec.week[0], desc:''},
+    sections:{day:{title:d.sec.day[0], desc:''}, week:{title:d.sec.week[0], desc:''}, time:{title:UI[L].secTime, desc:''},
               rules:{title:d.sec.rules[0], desc:''}, card:{title:d.sec.card[0], desc:''},
               notes:{title:d.sec.notes[0], desc:''}},
     day:times.map((time,i) => ({id:uid('d'), time, name:'', note:'', dur:i === 0 ? 60 : 90,
@@ -1110,7 +1229,8 @@ function blankState(L){
     weekNote:'',
     cards:[0,1,2].map(i => ({id:uid('c'), eyebrow:'', title:'', color:PRESETS[[0,9,5][i]], items:['','','']})),
     strip:[0,1,2,3,4,5,6].map(() => ({id:uid('p'), label:'', kind:'line', text:''})),
-    notes:[0,1].map(i => ({id:uid('n'), label:'', color:PRESETS[[12,5][i]], text:''}))
+    notes:[0,1].map(i => ({id:uid('n'), label:'', color:PRESETS[[12,5][i]], text:''})),
+    events:[]
   };
 }
 
@@ -1119,7 +1239,7 @@ function minState(L){
   return {
     v:3, title:'', lede:'',
     stats:[{id:uid('s'), value:'', label:''}],
-    sections:{day:{title:d.sec.day[0], desc:''}, week:{title:d.sec.week[0], desc:''},
+    sections:{day:{title:d.sec.day[0], desc:''}, week:{title:d.sec.week[0], desc:''}, time:{title:UI[L].secTime, desc:''},
               rules:{title:d.sec.rules[0], desc:''}, card:{title:d.sec.card[0], desc:''},
               notes:{title:d.sec.notes[0], desc:''}},
     day:[{id:uid('d'), time:'', name:'', note:'', dur:60, color:PRESETS[0]}],
@@ -1127,7 +1247,8 @@ function minState(L){
     weekNote:'',
     cards:[{id:uid('c'), eyebrow:'', title:'', color:PRESETS[0], items:['']}],
     strip:[{id:uid('p'), label:'', kind:'line', text:''}],
-    notes:[{id:uid('n'), label:'', color:PRESETS[12], text:''}]
+    notes:[{id:uid('n'), label:'', color:PRESETS[12], text:''}],
+    events:[]
   };
 }
 
@@ -1209,8 +1330,15 @@ function swatch(path){
     + `<input type="color" value="${esc(v)}" data-color="${path}" tabindex="-1" aria-hidden="true"></span>`;
 }
 
+const tmin = v => { const m = /^(\d{1,2})[:.](\d{2})$/.exec(String(v || '').trim()); if (!m) return null; const h = +m[1], mi = +m[2]; return (h > 24 || mi > 59) ? null : Math.min(1440, h * 60 + mi); };
+const tfmt = m => String(Math.floor(m / 60)).padStart(2,'0') + ':' + String(m % 60).padStart(2,'0');
+function migrate(s){
+  if (!s.events) s.events = [];
+  if (!s.sections.time) s.sections.time = {title:t.secTime, desc:''};
+}
 function render(){
   const s = state;
+  migrate(s);
 
   const stats = s.stats.map((x,i) => `
     <div class="stat" data-sort="stats" data-id="${x.id}">
@@ -1270,6 +1398,30 @@ function render(){
         : `<div class="sline"></div>`}
     </div>`).join('');
 
+  const HPX = 30;
+  const axis = Array.from({length:25}, (_, h) => `<span style="top:${h * HPX}px">${String(h).padStart(2,'0')}:00</span>`).join('');
+  const evIdx = new Map(s.events.map((e,i) => [e.id, i]));
+  const tlHeads = [], tlBodies = [];
+  s.week.days.forEach((d,di) => {
+    const evs = s.events.filter(e => e.day === di).map(e => {
+      const i = evIdx.get(e.id);
+      const a = tmin(e.start) ?? 540, b0 = tmin(e.end) ?? a + 60, b = Math.max(a + 15, b0);
+      const top = a / 60 * HPX, hgt = (b - a) / 60 * HPX;
+      return `
+        <div class="ev tint${hgt < 30 ? ' short' : ''}" style="--c:${esc(e.color)};top:${top}px;height:${hgt}px" data-id="${e.id}">
+          ${tools([swatch(`events.${i}.color`), `<button class="ic" data-evday="-1" data-id="${e.id}" title="${esc(t.tipPrev)}">‹</button>`, `<button class="ic" data-evday="1" data-id="${e.id}" title="${esc(t.tipNext)}">›</button>`, del('events',e.id)])}
+          <span class="et num" ${ED} data-bind="events.${i}.start" data-time="${e.id}" data-ph="${esc(t.phEvTime)}">${esc(e.start)}–${esc(e.end)}</span>
+          ${txt(`events.${i}.name`,'en',t.phName)}
+        </div>`;
+    }).join('');
+    tlHeads.push(`<div class="tlh"><span ${ED} data-bind="week.days.${di}">${esc(d)}</span><button class="ic add" data-addev="${di}" title="${esc(t.addEvent)}" aria-label="${esc(t.addEvent)}">＋</button></div>`);
+    tlBodies.push(`<div class="tlbody">${evs}</div>`);
+  });
+  const timeline = `<div class="tl" style="--hpx:${HPX}px">
+      <div class="tlcorner"></div>${tlHeads.join('')}
+      <div class="tlaxis">${axis}</div>${tlBodies.join('')}
+    </div>`;
+
   const notes = s.notes.map((n,i) => `
     <div class="note tint" style="--c:${esc(n.color)}" data-sort="notes" data-id="${n.id}">
       ${tools([grip(), swatch(`notes.${i}.color`), ins('notes',n.id,t.insNote), del('notes',n.id)])}
@@ -1311,6 +1463,13 @@ function render(){
         <div class="hscroll"><div class="wgrid">${whead}${wrows}</div></div>
         <button class="addrow" data-add="week">${esc(t.addWeek)}</button>
         <div class="caption" ${ED} data-bind="weekNote" data-ph="${esc(t.phSecDesc)}">${esc(s.weekNote)}</div>
+      </div>
+    </section>
+
+    <section>${head('time')}
+      <div class="board">
+        <div class="hscroll">${timeline}</div>
+        <p class="hint" style="margin-top:10px">${esc(t.hintTime)}</p>
       </div>
     </section>
 
@@ -1420,6 +1579,7 @@ $('#langSel2').onchange = e => setLang(e.target.value);
 /* ═══════════ 6. 编辑 ═══════════ */
 document.addEventListener('input', e => {
   const el = e.target.closest('[data-bind]');
+  if (el && el.dataset.time){ return; }   /* time range: parsed on blur */
   if (el){
     let v = el.dataset.html ? el.innerHTML : el.textContent;
     if (el.dataset.num) v = v.replace(/[^\d]/g,'');
@@ -1438,7 +1598,7 @@ function applyColor(path, val){
     sw.style.setProperty('--c', val);
     const inp = sw.querySelector('input[type=color]');
     if (inp) inp.value = val;
-    const host = sw.closest('.blk, .wrowhead, .card, .note');
+    const host = sw.closest('.blk, .wrowhead, .card, .note, .ev');
     if (host){
       host.style.setProperty('--c', val);
       if (host.classList.contains('wrowhead')){
@@ -1452,6 +1612,16 @@ function applyColor(path, val){
 
 document.addEventListener('focusout', e => {
   if (e.target.closest('[data-num]')){ render(); queueSave(); }
+  const tm = e.target.closest('[data-time]');
+  if (tm){
+    const ev = state.events.find(x => x.id === tm.dataset.time);
+    const m = /(\d{1,2}[:.]\d{2})\s*[–\-—~to]+\s*(\d{1,2}[:.]\d{2})/.exec(tm.textContent);
+    if (ev && m && tmin(m[1]) != null && tmin(m[2]) != null){
+      const a = tmin(m[1]), b = tmin(m[2]);
+      ev.start = tfmt(a); ev.end = tfmt(b > a ? b : Math.min(1440, a + 15));
+    }
+    render(); queueSave();
+  }
 }, true);
 
 document.addEventListener('keydown', e => {
@@ -1467,11 +1637,26 @@ function blank(kind){
   if (kind === 'strip') return {id:uid('p'), label:t.newStrip, kind:'line', text:''};
   if (kind === 'stats') return {id:uid('s'), value:'', label:''};
   if (kind === 'notes') return {id:uid('n'), label:t.newNote, color:'#9AA0A6', text:''};
+  if (kind === 'events') return {id:uid('e'), day:0, start:'09:00', end:'10:00', name:t.newEvent, color:PRESETS[0]};
   return null;
 }
 const listOf = k => k === 'week' ? state.week.rows : state[k];
 
 app.addEventListener('click', e => {
+  const ae = e.target.closest('[data-addev]');
+  if (ae){
+    const day = +ae.dataset.addev, same = state.events.filter(x => x.day === day);
+    const last = same.length ? Math.max(...same.map(x => tmin(x.end) || 0)) : 540;
+    const st = Math.min(1380, Math.max(360, last)), o = blank('events');
+    o.day = day; o.start = tfmt(st); o.end = tfmt(Math.min(1440, st + 60));
+    state.events.push(o); render(); queueSave(); return;
+  }
+  const md = e.target.closest('[data-evday]');
+  if (md){
+    const ev = state.events.find(x => x.id === md.dataset.id);
+    if (ev){ ev.day = (ev.day + +md.dataset.evday + 7) % 7; render(); queueSave(); }
+    return;
+  }
   const a = e.target.closest('[data-add]');
   if (a){
     const k = a.dataset.add;
@@ -1493,7 +1678,7 @@ app.addEventListener('click', e => {
   const d = e.target.closest('[data-del]');
   if (d){
     const k = d.dataset.del, id = d.dataset.id;
-    const dmap = {day:'day', week:'week', cards:'cards', strip:'strip', stat:'stats', notes:'notes'};
+    const dmap = {day:'day', week:'week', cards:'cards', strip:'strip', stat:'stats', notes:'notes', events:'events'};
     if (dmap[k]){
       const list = listOf(dmap[k]);
       const at = list.findIndex(x => x.id === id);
@@ -1888,6 +2073,7 @@ Schema (include ONLY the top-level keys listed under REQUESTED PARTS; omit all o
  "sections": {"day":{"title":string,"desc":string}, "week":{...}, "rules":{...}, "card":{...}, "notes":{...}},
  "day": [{"time":"HH:MM","name":string,"note":string,"dur":int,"up":int,"color":"#hex"}],   // 8-22 blocks; "up" = max stretch in minutes, only on elastic blocks
  "week": {"days":[7 short weekday names], "rows":[{"label":string,"sub":string,"color":"#hex","cells":[7 strings]}]},  // 4-9 rows; use "—" for an empty cell
+ "events": [{"day":0-6,"start":"HH:MM","end":"HH:MM","name":string,"color":"#hex"}],   // the week as a timetable: every fixed appointment plus the main study/hobby/meal/sleep blocks of each day (day 0 = the first weekday column); 40-120 entries, non-overlapping within a day
  "weekNote": string,
  "cards": [{"eyebrow":string,"title":string,"color":"#hex","items":[string]}],   // 3-5 cards, 3-6 items each; eyebrow like "01 · Quality gate"
  "strip": [{"label":string,"kind":"line"|"box","text":string,"hi":boolean}],    // 5-9 slots; exactly one hi:true (the one thing that makes the day count); 1-2 "box" slots whose text is checkbox items like "☐ A　☐ B"
@@ -1896,7 +2082,7 @@ Schema (include ONLY the top-level keys listed under REQUESTED PARTS; omit all o
 Colors — use only these hex values: ${PRESETS.join(', ')}. Convention: #0071e3 the priority subject, #5E8C6A life/body posts, #C77D2B theme blocks, #9AA0A6 breaks and skippable items, #7D6BB0 evening/leisure, #E0392B rules about limits, #D9548A relationships.`;
 }
 function aiUser(req, scopeKeys, mode){
-  const parts = scopeKeys.map(k => k === 'head' ? 'title, lede, stats, sections' : k === 'rules' ? 'cards' : k === 'card' ? 'strip' : k === 'week' ? 'week, weekNote' : k).join('; ');
+  const parts = scopeKeys.map(k => k === 'head' ? 'title, lede, stats, sections' : k === 'rules' ? 'cards' : k === 'card' ? 'strip' : k === 'week' ? 'week, weekNote, events' : k).join('; ');
   let u = `REQUESTED PARTS: ${parts}\nMODE: ${mode === 'replace' && state ? 'revise the current plan below — keep what still fits, change what the request asks for' : 'create a new plan from scratch'}\n\nPERSON'S REQUEST:\n${req}`;
   if (state){
     const cur = {title:state.title, lede:state.lede, stats:state.stats.map(x => ({value:x.value, label:x.label})),
@@ -1904,6 +2090,7 @@ function aiUser(req, scopeKeys, mode){
       day:state.day.map(b => ({time:b.time, name:b.name, note:b.note, dur:b.dur, up:b.up, color:b.color})),
       week:{days:state.week.days, rows:state.week.rows.map(r => ({label:r.label, sub:r.sub, color:r.color, cells:r.cells}))},
       weekNote:state.weekNote,
+      events:(state.events || []).map(e => ({day:e.day, start:e.start, end:e.end, name:e.name, color:e.color})),
       cards:state.cards.map(c => ({eyebrow:c.eyebrow, title:c.title, color:c.color, items:c.items})),
       strip:state.strip.map(p => ({label:p.label, kind:p.kind, text:p.text.replace(/<br\s*\/?>/gi,'\n'), hi:!!p.hi})),
       notes:state.notes.map(n => ({label:n.label, color:n.color, text:n.text}))};
@@ -1982,6 +2169,13 @@ function normalizePlan(o, base, scope){
     if (!rows.length) throw new Error('nojson');
     out.week = {days, rows};
     if (o.weekNote != null) out.weekNote = S(o.weekNote);
+    if (A(o.events).length){
+      out.events = A(o.events).slice(0, 200).map(e => {
+        const day = Math.min(6, Math.max(0, parseInt(e.day, 10) || 0));
+        const a = tmin(e.start) ?? 540, b = tmin(e.end) ?? a + 60;
+        return {id:uid('e'), day, start:tfmt(Math.min(a, 1425)), end:tfmt(Math.max(a + 15, Math.min(1440, b))), name:S(e.name), color:C(e.color)};
+      });
+    }
   }
   if (scope.rules){
     out.cards = A(o.cards).slice(0, 8).map(c => ({id:uid('c'), eyebrow:S(c.eyebrow), title:S(c.title), color:C(c.color), items:A(c.items).map(S).filter(Boolean)}));
@@ -2035,7 +2229,7 @@ $('#aiGo').onclick = async () => {
     const sum = [];
     if (scope.head && plan.title) sum.push(plan.title);
     if (scope.day) sum.push(plan.day.length + ' ' + t.unitBlocks);
-    if (scope.week) sum.push(plan.week.rows.length + ' ' + t.unitRows);
+    if (scope.week) sum.push(plan.week.rows.length + ' ' + t.unitRows + (plan.events && plan.events.length ? ' · ' + plan.events.length + ' ' + t.unitEvents : ''));
     if (scope.rules) sum.push(plan.cards.length + ' ' + t.unitCards);
     if (scope.card) sum.push(plan.strip.length + ' ' + t.unitCells);
     if (scope.notes) sum.push(plan.notes.length + ' ' + t.unitNotes);
