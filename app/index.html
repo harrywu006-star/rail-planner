@@ -180,6 +180,14 @@ body.edit .tl .ev .tools{display:none}
 body.edit .tl .ev:hover .tools{display:flex}
 .tl .ev .ic{width:17px; height:17px; font-size:10px}
 .tl .ev .sw{width:17px; height:17px}
+.tl .tlh .tld{display:block; font-size:11px; font-weight:400; opacity:.7; margin-top:1px; letter-spacing:0; font-variant-numeric:tabular-nums}
+.tl .tlh.today{background:var(--blue); color:#fff}
+.tl .tlnow{position:absolute; left:0; right:0; height:0; border-top:2px solid #ff3b30; z-index:2; pointer-events:none}
+.tl .tlnow::before{content:""; position:absolute; left:-4px; top:-5px; width:8px; height:8px; border-radius:50%; background:#ff3b30}
+.tl .ev.linked .et::after{content:" ⇅"; opacity:.55}
+.tlfill{display:none; align-items:center; gap:6px; flex-wrap:wrap; margin-top:12px; font-size:12.5px; color:var(--muted)}
+body.edit .tlfill{display:flex}
+.tlfill .chip{font-size:12px; padding:4px 9px}
 .scell{background:var(--surface2); border-radius:10px; padding:13px 13px 15px; display:flex; flex-direction:column; gap:9px; min-height:104px; position:relative}
 .scell .slb{font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:0}
 .scell .sline{margin-top:auto; border-bottom:1px dashed var(--hair); height:17px}
@@ -599,7 +607,8 @@ const UI = {
  aiSent:'发给 Claude 的只有：你写的需求 + 当前这份计划的文字。', aiPlanName:'助手排的计划', aiApplied:'已应用。',
  scopeDay:'一日轨道', scopeWeek:'一周分配', scopeRules:'运行规则', scopeCard:'每日卡片', scopeNotes:'备注', scopeHead:'标题与数字',
  unitBlocks:'段', unitRows:'条轨道', unitCards:'张卡', unitCells:'格', unitNotes:'块备注', unitEvents:'个时段',
- secTime:'一周时间轴', secTimeDesc:'竖轴是 0–24 点，横向是七天：一眼看到每天从早到晚在干什么。', addEvent:'在这一天加一个时段', newEvent:'新时段', tipPrev:'挪到前一天', tipNext:'挪到后一天', phEvTime:'09:00–10:00', hintTime:'时段上：改文字直接点；改时间点小字，写成 09:00–10:30；色点换颜色；◀ ▶ 换天；✕ 删除；列头 ＋ 新增。',
+ secTime:'一周时间轴', secTimeDesc:'竖轴是 0–24 点，横向是七天：一眼看到每天从早到晚在干什么。', addEvent:'在这一天加一个时段', newEvent:'新时段', tipPrev:'挪到前一天', tipNext:'挪到后一天', phEvTime:'09:00–10:00', hintTime:'时段上：改文字直接点；改时间点小字，写成 09:00–10:30；色点换颜色；◀ ▶ 换天；✕ 删除；列头 ＋ 新增。带 ⇅ 的时段是从一日轨道铺下来的，改一日轨道它们会跟着变。',
+ fillFrom:'把一日轨道铺到：', fillT:'覆盖这几天的时段？', fillD:'这些天已经有手动加的时段，铺上去会把它们换成一日轨道的内容。手动加的课表想保留的话，先取消，把它们写进一日轨道再铺。', fillAll:'全部七天', fillWork:'周一–周五', syncDay:'改一日轨道时，⇅ 时段自动同步', tzNote:'时间和日期按德国（Europe/Berlin）',
  phAny:'输入…', phStatV:'0', phStatL:'说明',
  newDay:'新的一段', newWeek:'新轨道', newCardEye:'新分类', newCard:'新规则', newStrip:'新格子', newNote:'新备注', newItem:'写一条',
  days:['周一','周二','周三','周四','周五','周六','周日'],
@@ -648,7 +657,8 @@ const UI = {
  aiSent:'送給 Claude 的只有：你寫的需求 + 目前這份計畫的文字。', aiPlanName:'助手排的計畫', aiApplied:'已套用。',
  scopeDay:'一日軌道', scopeWeek:'一週分配', scopeRules:'運行規則', scopeCard:'每日卡片', scopeNotes:'備註', scopeHead:'標題與數字',
  unitBlocks:'段', unitRows:'條軌道', unitCards:'張卡', unitCells:'格', unitNotes:'塊備註', unitEvents:'個時段',
- secTime:'一週時間軸', secTimeDesc:'豎軸是 0–24 點，橫向是七天：一眼看到每天從早到晚在做什麼。', addEvent:'在這一天加一個時段', newEvent:'新時段', tipPrev:'挪到前一天', tipNext:'挪到後一天', phEvTime:'09:00–10:00', hintTime:'時段上：改文字直接點；改時間點小字，寫成 09:00–10:30；色點換顏色；◀ ▶ 換天；✕ 刪除；欄頭 ＋ 新增。',
+ secTime:'一週時間軸', secTimeDesc:'豎軸是 0–24 點，橫向是七天：一眼看到每天從早到晚在做什麼。', addEvent:'在這一天加一個時段', newEvent:'新時段', tipPrev:'挪到前一天', tipNext:'挪到後一天', phEvTime:'09:00–10:00', hintTime:'時段上：改文字直接點；改時間點小字，寫成 09:00–10:30；色點換顏色；◀ ▶ 換天；✕ 刪除；欄頭 ＋ 新增。帶 ⇅ 的時段是從一日軌道鋪下來的，改一日軌道它們會跟著變。',
+ fillFrom:'把一日軌道鋪到：', fillT:'覆蓋這幾天的時段？', fillD:'這些天已經有手動加的時段，鋪上去會把它們換成一日軌道的內容。手動加的課表想保留的話，先取消，把它們寫進一日軌道再鋪。', fillAll:'全部七天', fillWork:'週一–週五', syncDay:'改一日軌道時，⇅ 時段自動同步', tzNote:'時間和日期按德國（Europe/Berlin）',
  phAny:'輸入…', phStatV:'0', phStatL:'說明',
  newDay:'新的一段', newWeek:'新軌道', newCardEye:'新分類', newCard:'新規則', newStrip:'新格子', newNote:'新備註', newItem:'寫一條',
  days:['週一','週二','週三','週四','週五','週六','週日'],
@@ -697,7 +707,8 @@ const UI = {
  aiSent:'Only two things are sent to Claude: your request and the text of the current plan.', aiPlanName:'Plan by the assistant', aiApplied:'Applied.',
  scopeDay:'Day rail', scopeWeek:'Week grid', scopeRules:'House rules', scopeCard:'Daily card', scopeNotes:'Notes', scopeHead:'Title & figures',
  unitBlocks:'blocks', unitRows:'rails', unitCards:'cards', unitCells:'slots', unitNotes:'notes', unitEvents:'slots',
- secTime:'Week timeline', secTimeDesc:'The vertical axis runs 0–24 h, the columns are the seven days: see at a glance what each day holds from morning to night.', addEvent:'Add a slot to this day', newEvent:'New slot', tipPrev:'Move to the previous day', tipNext:'Move to the next day', phEvTime:'09:00–10:00', hintTime:'On a slot: click the text to edit; click the small time and write 09:00–10:30; the dot changes colour; ◀ ▶ move it a day; ✕ deletes; ＋ in a column header adds one.',
+ secTime:'Week timeline', secTimeDesc:'The vertical axis runs 0–24 h, the columns are the seven days: see at a glance what each day holds from morning to night.', addEvent:'Add a slot to this day', newEvent:'New slot', tipPrev:'Move to the previous day', tipNext:'Move to the next day', phEvTime:'09:00–10:00', hintTime:'On a slot: click the text to edit; click the small time and write 09:00–10:30; the dot changes colour; ◀ ▶ move it a day; ✕ deletes; ＋ in a column header adds one. Slots marked ⇅ come from the day rail and follow its edits.',
+ fillFrom:'Lay the day rail onto:', fillT:'Overwrite these days?', fillD:'These days already have slots added by hand; laying the day rail onto them replaces those slots. To keep them, cancel and put them into the day rail first.', fillAll:'all seven days', fillWork:'Mon–Fri', syncDay:'editing the day rail updates ⇅ slots', tzNote:'Times and dates follow Germany (Europe/Berlin)',
  phAny:'Type…', phStatV:'0', phStatL:'Caption',
  newDay:'New block', newWeek:'New rail', newCardEye:'New category', newCard:'New rule', newStrip:'New slot', newNote:'New note', newItem:'Write a line',
  days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
@@ -746,7 +757,8 @@ const UI = {
  aiSent:'An Claude gehen nur zwei Dinge: deine Anfrage und der Text des aktuellen Plans.', aiPlanName:'Plan vom Assistenten', aiApplied:'Übernommen.',
  scopeDay:'Tagesstrecke', scopeWeek:'Wochenraster', scopeRules:'Betriebsregeln', scopeCard:'Tageskarte', scopeNotes:'Notizen', scopeHead:'Titel & Kennzahlen',
  unitBlocks:'Abschnitte', unitRows:'Zeilen', unitCards:'Karten', unitCells:'Felder', unitNotes:'Notizen', unitEvents:'Zeitfenster',
- secTime:'Wochen-Zeitachse', secTimeDesc:'Die senkrechte Achse läuft von 0 bis 24 Uhr, die Spalten sind die sieben Tage: auf einen Blick, was jeder Tag von morgens bis abends enthält.', addEvent:'Zeitfenster an diesem Tag hinzufügen', newEvent:'Neues Zeitfenster', tipPrev:'Einen Tag nach vorn', tipNext:'Einen Tag nach hinten', phEvTime:'09:00–10:00', hintTime:'Am Zeitfenster: Text anklicken und ändern; die kleine Zeit anklicken und 09:00–10:30 schreiben; der Punkt ändert die Farbe; ◀ ▶ verschiebt um einen Tag; ✕ löscht; ＋ im Spaltenkopf fügt eines hinzu.',
+ secTime:'Wochen-Zeitachse', secTimeDesc:'Die senkrechte Achse läuft von 0 bis 24 Uhr, die Spalten sind die sieben Tage: auf einen Blick, was jeder Tag von morgens bis abends enthält.', addEvent:'Zeitfenster an diesem Tag hinzufügen', newEvent:'Neues Zeitfenster', tipPrev:'Einen Tag nach vorn', tipNext:'Einen Tag nach hinten', phEvTime:'09:00–10:00', hintTime:'Am Zeitfenster: Text anklicken und ändern; die kleine Zeit anklicken und 09:00–10:30 schreiben; der Punkt ändert die Farbe; ◀ ▶ verschiebt um einen Tag; ✕ löscht; ＋ im Spaltenkopf fügt eines hinzu. Mit ⇅ markierte Fenster stammen aus der Tagesstrecke und folgen deren Änderungen.',
+ fillFrom:'Tagesstrecke übertragen auf:', fillT:'Diese Tage überschreiben?', fillD:'An diesen Tagen gibt es schon von Hand angelegte Zeitfenster; die Übertragung ersetzt sie durch die Tagesstrecke. Zum Behalten abbrechen und sie zuerst in die Tagesstrecke eintragen.', fillAll:'alle sieben Tage', fillWork:'Mo–Fr', syncDay:'Änderungen an der Tagesstrecke aktualisieren ⇅-Fenster', tzNote:'Zeiten und Daten nach Deutschland (Europe/Berlin)',
  phAny:'Eingeben…', phStatV:'0', phStatL:'Bezeichnung',
  newDay:'Neuer Abschnitt', newWeek:'Neue Zeile', newCardEye:'Neue Kategorie', newCard:'Neue Regel', newStrip:'Neues Feld', newNote:'Neue Notiz', newItem:'Zeile schreiben',
  days:['Mo','Di','Mi','Do','Fr','Sa','So'],
@@ -1303,7 +1315,7 @@ function openPlan(id){
   statusEl.textContent = t.saved;
   scrollTo(0,0);
 }
-const stamp = ms => new Date(ms).toLocaleDateString(lang === 'zh-Hans' ? 'zh-CN' : lang === 'zh-Hant' ? 'zh-TW' : lang, {month:'numeric', day:'numeric'});
+const stamp = ms => new Date(ms).toLocaleDateString('de-DE', {timeZone:'Europe/Berlin', day:'2-digit', month:'2-digit'});
 
 /* ═══════════ 4. 路径读写 ═══════════ */
 function atPath(path){
@@ -1335,6 +1347,66 @@ const tfmt = m => String(Math.floor(m / 60)).padStart(2,'0') + ':' + String(m % 
 function migrate(s){
   if (!s.events) s.events = [];
   if (!s.sections.time) s.sections.time = {title:t.secTime, desc:''};
+  if (s.timeSync == null) s.timeSync = true;
+}
+/* 时间、日期一律按德国 */
+const TZ = 'Europe/Berlin';
+function berlinNow(){
+  const p = new Intl.DateTimeFormat('en-US', {timeZone:TZ, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', weekday:'short', hour12:false}).formatToParts(new Date());
+  const g = k => (p.find(x => x.type === k) || {}).value || '';
+  const wd = {Mon:0, Tue:1, Wed:2, Thu:3, Fri:4, Sat:5, Sun:6}[g('weekday')] ?? 0;
+  return {y:+g('year'), m:+g('month'), d:+g('day'), h:(+g('hour')) % 24, mi:+g('minute'), wd};
+}
+function weekDates(){
+  const n = berlinNow(), base = Date.UTC(n.y, n.m - 1, n.d);
+  return Array.from({length:7}, (_, i) => { const d = new Date(base + (i - n.wd) * 864e5); return String(d.getUTCDate()).padStart(2,'0') + '.' + String(d.getUTCMonth() + 1).padStart(2,'0') + '.'; });
+}
+function paintNow(){
+  const tl = app.querySelector('.tl'); if (!tl) return;
+  tl.querySelectorAll('.tlnow').forEach(x => x.remove());
+  tl.querySelectorAll('.tlh.today').forEach(x => x.classList.remove('today'));
+  const n = berlinNow(), bodies = tl.querySelectorAll('.tlbody'), heads = tl.querySelectorAll('.tlh');
+  if (bodies.length !== 7) return;
+  const HPX = parseFloat(getComputedStyle(tl).getPropertyValue('--hpx')) || 30;
+  const line = document.createElement('div'); line.className = 'tlnow'; line.style.top = ((n.h * 60 + n.mi) / 60 * HPX) + 'px';
+  bodies[n.wd].appendChild(line); heads[n.wd].classList.add('today');
+}
+setInterval(() => { if (state) paintNow(); }, 60000);
+/* 一日轨道 → 时间轴：铺一天（带 from 的旧时段被替换，手动加的保留） */
+function fillDay(di){
+  let cur = null; const evs = [];
+  for (const b of state.day){
+    let a = tmin(b.time); if (a == null){ if (cur == null) continue; a = cur; }
+    const e = Math.min(1440, a + Math.max(5, +b.dur || 5));
+    if (e <= a) continue;
+    evs.push({id:uid('e'), day:di, start:tfmt(a), end:tfmt(e), name:b.name || b.note || '', color:b.color, from:b.id});
+    cur = e;
+  }
+  state.events = state.events.filter(x => x.day !== di).concat(evs);
+}
+function syncLinked(blockId){
+  if (!state.timeSync) return;
+  const b = state.day.find(x => x.id === blockId); if (!b) return;
+  const a = tmin(b.time);
+  state.events.forEach(e => {
+    if (e.from !== blockId) return;
+    if (a != null){ e.start = tfmt(a); e.end = tfmt(Math.min(1440, a + Math.max(5, +b.dur || 5))); }
+    e.name = b.name || b.note || ''; e.color = b.color;
+  });
+}
+function patchLinked(blockId){
+  if (!state.timeSync) return;
+  const HPX = 30;
+  state.events.forEach(e => {
+    if (e.from !== blockId) return;
+    const el = app.querySelector('.ev[data-id="' + e.id + '"]'); if (!el) return;
+    const a = tmin(e.start) ?? 540, b = Math.max(a + 15, tmin(e.end) ?? a + 60);
+    el.style.top = (a / 60 * HPX) + 'px'; el.style.height = ((b - a) / 60 * HPX) + 'px'; el.style.setProperty('--c', e.color);
+    el.classList.toggle('short', (b - a) / 60 * HPX < 30);
+    const et = el.querySelector('.et'), en = el.querySelector('.en');
+    if (et && document.activeElement !== et) et.textContent = e.start + '–' + e.end;
+    if (en && document.activeElement !== en) en.textContent = e.name;
+  });
 }
 function render(){
   const s = state;
@@ -1401,20 +1473,20 @@ function render(){
   const HPX = 30;
   const axis = Array.from({length:25}, (_, h) => `<span style="top:${h * HPX}px">${String(h).padStart(2,'0')}:00</span>`).join('');
   const evIdx = new Map(s.events.map((e,i) => [e.id, i]));
-  const tlHeads = [], tlBodies = [];
+  const tlHeads = [], tlBodies = [], wdates = s.week.days.length === 7 ? weekDates() : [];
   s.week.days.forEach((d,di) => {
     const evs = s.events.filter(e => e.day === di).map(e => {
       const i = evIdx.get(e.id);
       const a = tmin(e.start) ?? 540, b0 = tmin(e.end) ?? a + 60, b = Math.max(a + 15, b0);
       const top = a / 60 * HPX, hgt = (b - a) / 60 * HPX;
       return `
-        <div class="ev tint${hgt < 30 ? ' short' : ''}" style="--c:${esc(e.color)};top:${top}px;height:${hgt}px" data-id="${e.id}">
+        <div class="ev tint${hgt < 30 ? ' short' : ''}${e.from ? ' linked' : ''}" style="--c:${esc(e.color)};top:${top}px;height:${hgt}px" data-id="${e.id}">
           ${tools([swatch(`events.${i}.color`), `<button class="ic" data-evday="-1" data-id="${e.id}" title="${esc(t.tipPrev)}">‹</button>`, `<button class="ic" data-evday="1" data-id="${e.id}" title="${esc(t.tipNext)}">›</button>`, del('events',e.id)])}
           <span class="et num" ${ED} data-bind="events.${i}.start" data-time="${e.id}" data-ph="${esc(t.phEvTime)}">${esc(e.start)}–${esc(e.end)}</span>
           ${txt(`events.${i}.name`,'en',t.phName)}
         </div>`;
     }).join('');
-    tlHeads.push(`<div class="tlh"><span ${ED} data-bind="week.days.${di}">${esc(d)}</span><button class="ic add" data-addev="${di}" title="${esc(t.addEvent)}" aria-label="${esc(t.addEvent)}">＋</button></div>`);
+    tlHeads.push(`<div class="tlh"><span ${ED} data-bind="week.days.${di}">${esc(d)}</span>${wdates[di] ? `<span class="tld num">${wdates[di]}</span>` : ''}<button class="ic add" data-addev="${di}" title="${esc(t.addEvent)}" aria-label="${esc(t.addEvent)}">＋</button></div>`);
     tlBodies.push(`<div class="tlbody">${evs}</div>`);
   });
   const timeline = `<div class="tl" style="--hpx:${HPX}px">
@@ -1469,7 +1541,9 @@ function render(){
     <section>${head('time')}
       <div class="board">
         <div class="hscroll">${timeline}</div>
-        <p class="hint" style="margin-top:10px">${esc(t.hintTime)}</p>
+        <div class="tlfill"><span>${esc(t.fillFrom)}</span>${s.week.days.map((d,di) => `<button class="chip" data-fillday="${di}">${esc(d)}</button>`).join('')}<button class="chip" data-fillday="work">${esc(t.fillWork)}</button><button class="chip" data-fillday="all">${esc(t.fillAll)}</button>
+          <label class="chip${s.timeSync ? ' on' : ''}" style="margin-left:auto"><input type="checkbox" data-timesync${s.timeSync ? ' checked' : ''}>${esc(t.syncDay)}</label></div>
+        <p class="hint" style="margin-top:10px">${esc(t.hintTime)} ${esc(t.tzNote)}.</p>
       </div>
     </section>
 
@@ -1492,6 +1566,7 @@ function render(){
 
   wireSort();
   applyMode();
+  paintNow();
 }
 
 /* 界面文字（与内容无关） */
@@ -1584,6 +1659,8 @@ document.addEventListener('input', e => {
     let v = el.dataset.html ? el.innerHTML : el.textContent;
     if (el.dataset.num) v = v.replace(/[^\d]/g,'');
     writePath(el.dataset.bind, el.dataset.num ? (parseInt(v,10) || 0) : v);
+    const dm = /^day\.(\d+)\./.exec(el.dataset.bind);
+    if (dm && state.day[+dm[1]]){ syncLinked(state.day[+dm[1]].id); patchLinked(state.day[+dm[1]].id); }
     queueSave();
     return;
   }
@@ -1601,6 +1678,7 @@ function applyColor(path, val){
     const host = sw.closest('.blk, .wrowhead, .card, .note, .ev');
     if (host){
       host.style.setProperty('--c', val);
+      if (host.classList.contains('blk')){ syncLinked(host.dataset.id); patchLinked(host.dataset.id); }
       if (host.classList.contains('wrowhead')){
         host.parentElement.querySelectorAll('.wcell.tint').forEach(x => x.style.setProperty('--c', val));
       }
@@ -1611,7 +1689,7 @@ function applyColor(path, val){
 }
 
 document.addEventListener('focusout', e => {
-  if (e.target.closest('[data-num]')){ render(); queueSave(); }
+  if (e.target.closest('[data-num]')){ const nb = e.target.closest('.blk'); if (nb) syncLinked(nb.dataset.id); render(); queueSave(); }
   const tm = e.target.closest('[data-time]');
   if (tm){
     const ev = state.events.find(x => x.id === tm.dataset.time);
@@ -1642,7 +1720,21 @@ function blank(kind){
 }
 const listOf = k => k === 'week' ? state.week.rows : state[k];
 
+app.addEventListener('change', e => {
+  const c = e.target.closest('[data-timesync]'); if (!c) return;
+  state.timeSync = c.checked; c.closest('.chip').classList.toggle('on', c.checked);
+  if (c.checked) state.day.forEach(b => syncLinked(b.id));
+  render(); queueSave();
+});
 app.addEventListener('click', e => {
+  const fd = e.target.closest('[data-fillday]');
+  if (fd){
+    const k = fd.dataset.fillday;
+    const days = k === 'all' ? [0,1,2,3,4,5,6] : k === 'work' ? [0,1,2,3,4] : [+k];
+    const go = () => { days.forEach(fillDay); render(); queueSave(); };
+    if (state.events.some(x => days.includes(x.day) && !x.from)) ask(t.fillT, t.fillD, go, t.replace); else go();
+    return;
+  }
   const ae = e.target.closest('[data-addev]');
   if (ae){
     const day = +ae.dataset.addev, same = state.events.filter(x => x.day === day);
@@ -1683,6 +1775,7 @@ app.addEventListener('click', e => {
       const list = listOf(dmap[k]);
       const at = list.findIndex(x => x.id === id);
       if (at >= 0) list.splice(at, 1);
+      if (k === 'day') state.events.forEach(ev => { if (ev.from === id) delete ev.from; });
     }
     if (k === 'item'){
       const c = state.cards.find(x => x.id === id);
